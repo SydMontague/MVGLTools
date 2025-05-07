@@ -8,6 +8,7 @@
 #include <string>
 #include <iomanip>
 #include <algorithm>
+#include <format>
 #include <sstream>
 #include <memory>
 #include <boost/algorithm/string/replace.hpp>
@@ -248,12 +249,13 @@ namespace dscstools {
 			//boost::property_tree::ptree format = getStructureFile(source);
 			auto filename = source.filename().string();
 
+			int32_t index = 0;
 			for (auto table : tables) {
 
 				uint32_t tableHeaderSize = table.totalSize();
 				const auto& formatValue = table.getElements(); //matchStructureName(format, table.name(), filename);
 
-				std::filesystem::path outputPath = target / source.filename() / (table.name() + std::string(".csv"));
+				std::filesystem::path outputPath = target / source.filename() / std::format("{:02d}_{}.csv", index++, table.name());
 				if (outputPath.has_parent_path())
 					std::filesystem::create_directories(outputPath.parent_path());
 				std::ofstream output(outputPath, std::ios::out);
@@ -376,7 +378,7 @@ namespace dscstools {
 
 			for (auto& file : sortedFiles) {
 				++numTables;
-				auto filename = file.filename().stem().string();
+				auto filename = file.filename().stem().string().substr(3);
 				// write EXPA Table header
 				std::ifstream countInput(file, std::ios::in);
 				aria::csv::CsvParser countParser(countInput);
