@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 		}
 		else if (strncmp("--pack", argv[1], 7) == 0) {
 			dscstools::mdb1::CompressMode mode = dscstools::mdb1::CompressMode::normal;
-			bool doCrypt = true;
+			bool doCrypt = false;
 
 			if (argc >= 5) {
 				if (strncmp("--disable-compression", argv[4], 22) == 0)

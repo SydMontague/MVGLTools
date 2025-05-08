@@ -44,9 +44,9 @@ namespace dscstools {
 		};
 
 		struct TreeNode {
-			uint16_t compareBit;
-			uint16_t left = 0;
-			uint16_t right = 0;
+			uint32_t compareBit;
+			uint32_t left = 0;
+			uint32_t right = 0;
 			std::string name;
 		};
 
@@ -300,7 +300,7 @@ namespace dscstools {
 			ArchiveInfo info = getArchiveInfo(source);
 			FileInfo fileInfo = findFileEntry(info.fileInfo, fileName);
 
-			if (fileInfo.file.compareBit == 0xFFFF || fileInfo.file.dataId == 0xFFFF)
+			if (fileInfo.file.compareBit == 0xFFFFFFFF || fileInfo.file.dataId == 0xFFFFFFFF)
 				throw std::invalid_argument("MDB1 File Extraction: File not found in archive");
 
 			extractMDB1File(source, target, fileInfo, info.dataStart, decompress);
@@ -320,11 +320,11 @@ namespace dscstools {
 				extractMDB1File(source, target, fileInfo, info.dataStart, decompress);
 		}
 
-		TreeNode findFirstBitMismatch(const uint16_t first, const std::vector<std::string>& nodeless, const std::vector<std::string>& withNode) {
+		TreeNode findFirstBitMismatch(const uint32_t first, const std::vector<std::string>& nodeless, const std::vector<std::string>& withNode) {
 			if (withNode.size() == 0)
 				return { first, 0, 0, nodeless[0] };
 
-			for (uint16_t i = first; i < 512; i++) {
+			for (uint16_t i = first; i < 1024; i++) {
 				bool set = false;
 				bool unset = false;
 
@@ -347,7 +347,7 @@ namespace dscstools {
 					return { i, 0, 0, *itr };
 			}
 
-			return { 0xFFFF, 0xFFFF, 0, "" };
+			return { 0xFFFFFFFF, 0xFFFFFFFF, 0, "" };
 		}
 
 		std::vector<TreeNode> generateTree(const std::filesystem::path path) {
@@ -371,15 +371,15 @@ namespace dscstools {
 				});
 
 			struct QueueEntry {
-				uint16_t parentNode;
-				uint16_t val1;
+				uint32_t parentNode;
+				uint32_t val1;
 				std::vector<std::string> list;
 				std::vector<std::string> nodeList;
 				bool left;
 			};
 
-			std::vector<TreeNode> nodes = { { 0xFFFF, 0, 0, "" } };
-			std::deque<QueueEntry> queue = { { 0, 0xFFFF, fileNames, std::vector<std::string>(), false } };
+			std::vector<TreeNode> nodes = { { 0xFFFFFFFF, 0, 0, "" } };
+			std::deque<QueueEntry> queue = { { 0, 0xFFFFFFFF, fileNames, std::vector<std::string>(), false } };
 
 			while (!queue.empty()) {
 				QueueEntry entry = queue.front();
@@ -402,9 +402,9 @@ namespace dscstools {
 					ptrdiff_t offset = std::distance(nodes.begin(), itr);
 
 					if (entry.left)
-						parent.left = (uint16_t)offset;
+						parent.left = (uint32_t)offset;
 					else
-						parent.right = (uint16_t)offset;
+						parent.right = (uint32_t)offset;
 
 					continue;
 				}
@@ -412,9 +412,9 @@ namespace dscstools {
 				TreeNode child = findFirstBitMismatch(entry.val1 + 1, nodeless, withNode);
 
 				if (entry.left)
-					parent.left = (uint16_t)nodes.size();
+					parent.left = (uint32_t)nodes.size();
 				else
-					parent.right = (uint16_t)nodes.size();
+					parent.right = (uint32_t)nodes.size();
 
 				std::vector<std::string> left;
 				std::vector<std::string> right;
@@ -429,8 +429,8 @@ namespace dscstools {
 				std::vector<std::string> newNodeList = entry.nodeList;
 				newNodeList.push_back(child.name);
 
-				if (left.size() > 0) queue.push_front({ static_cast<uint16_t>(nodes.size()), child.compareBit, left, newNodeList, true });
-				if (right.size() > 0) queue.push_front({ static_cast<uint16_t>(nodes.size()), child.compareBit, right, newNodeList, false });
+				if (left.size() > 0) queue.push_front({ static_cast<uint32_t>(nodes.size()), child.compareBit, left, newNodeList, true });
+				if (right.size() > 0) queue.push_front({ static_cast<uint32_t>(nodes.size()), child.compareBit, right, newNodeList, false });
 				nodes.push_back(child);
 			}
 
@@ -557,7 +557,7 @@ namespace dscstools {
 				std::replace(filePath.begin(), filePath.end(), '/', '\\');
 
 				strncpy(entry2.extension, ext.c_str(), 4);
-				strncpy(entry2.name, filePath.c_str(), 0x3C);
+				strncpy(entry2.name, filePath.c_str(), 0x7C);
 
 				// find corresponding node, create table entry
 				auto found = std::find_if(nodes.begin(), nodes.end(), [entry2](const TreeNode &node) { return node.name == entry2.extension; });
@@ -574,7 +574,7 @@ namespace dscstools {
 				bool hasEntry = compress == advanced && dataMap.find(data.crc) != dataMap.end();
 
 				// store table entries
-				header1[nodeId] = { treeNode.compareBit, (uint16_t)(hasEntry ? dataMap.at(data.crc) : header3.size()), treeNode.left, treeNode.right };
+				header1[nodeId] = { treeNode.compareBit, (uint32_t)(hasEntry ? dataMap.at(data.crc) : header3.size()), treeNode.left, treeNode.right };
 				header2[nodeId] = entry2;
 				if (!hasEntry) {
 					dataMap[data.crc] = header3.size();
