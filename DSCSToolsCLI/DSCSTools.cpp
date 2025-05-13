@@ -70,33 +70,15 @@ int main(int argc, char** argv) {
 		}
 		else if (strncmp("--pack", argv[1], 7) == 0) {
 			dscstools::mdb1::CompressMode mode = dscstools::mdb1::CompressMode::normal;
-			bool doCrypt = false;
 
 			if (argc >= 5) {
 				if (strncmp("--disable-compression", argv[4], 22) == 0)
 					mode = dscstools::mdb1::CompressMode::none;
 				else if (strncmp("--advanced-compression", argv[4], 23) == 0)
 					mode = dscstools::mdb1::CompressMode::advanced;
-				else if (strncmp("--disable-crypt", argv[4], 15) == 0)
-					doCrypt = false;
 			}
 
-			if (argc >= 6) {
-				if (strncmp("--disable-crypt", argv[5], 15) == 0)
-					doCrypt = false;
-			}
-
-			std::string filename = target.filename().string();
-			if ((filename.substr(filename.size() - 10) == "orbis.mvgl") ||
-				(filename.substr(filename.size() -  9) == "psp2.mvgl")  ||
-				(filename.substr(filename.size() -  9) == "nx64.mvgl"))
-				doCrypt = false;
-
-			if (doCrypt)
-				std::cout << "Will encrypt." << std::endl;
-			else
-				std::cout << "Will not encrypt." << std::endl;
-			dscstools::mdb1::packMDB1(source, target, mode, doCrypt, std::cout);
+			dscstools::mdb1::packMDB1(source, target, mode, false, std::cout);
 			std::cout << "Done" << std::endl;
 		}
 		else if (strncmp("--crypt", argv[1], 8) == 0) {
