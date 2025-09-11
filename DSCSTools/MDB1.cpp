@@ -13,7 +13,7 @@
 
 #include "../libs/doboz/Compressor.h"
 #include "../libs/doboz/Decompressor.h"
-#include "../libs/lz4/lz4.h"
+#include "../libs/lz4/lz4hc.h"
 
 namespace dscstools {
 	namespace mdb1 {
@@ -51,8 +51,8 @@ namespace dscstools {
 		};
 
 		struct CompressionResult {
-			uint32_t originalSize = 0;
-			uint32_t size = 0;
+			uint64_t originalSize = 0;
+			uint64_t size = 0;
 			uint32_t crc = 0;
 			std::unique_ptr<char[]> data;
 		};
@@ -200,13 +200,9 @@ namespace dscstools {
 			input.read(data.get(), length);
 
 			doboz::Compressor comp;
-			size_t destSize;
 
-			auto outputData = std::make_unique<char[]>(comp.getMaxCompressedSize(length));
-			doboz::Result result = comp.compress(data.get(), length, outputData.get(), comp.getMaxCompressedSize(length), destSize);
-
-			if (result != doboz::RESULT_OK)
-				throw std::runtime_error("Error: something went wrong while compressing, doboz error code: " + std::to_string(result));
+			auto outputData = std::make_unique<char[]>(LZ4_compressBound(length));
+			auto destSize = LZ4_compress_HC(data.get(), outputData.get(), length, LZ4_compressBound(length), LZ4HC_CLEVEL_MAX);
 
 			output.write(outputData.get(), destSize);
 		}
@@ -233,24 +229,11 @@ namespace dscstools {
 			auto data = std::make_unique<char[]>(length);
 			input.read(data.get(), length);
 
-			doboz::CompressionInfo info;
-			doboz::Decompressor decomp;
+			auto outputData = std::make_unique<char[]>(length * 10);
 
-			decomp.getCompressionInfo(data.get(), length, info);
+			auto bytes = LZ4_decompress_safe(data.get(), outputData.get(), length, length * 10);
 
-			if (info.compressedSize != length || info.version != 0)
-				throw std::runtime_error("Error: input file is not doboz compressed!");
-
-			auto outputData = std::make_unique<char[]>(info.uncompressedSize);
-
-			auto result = decomp.decompress(data.get(), length, outputData.get(), info.uncompressedSize);
-
-			if(result != doboz::RESULT_OK)
-				throw std::runtime_error("Error: something went wrong while decompressing, doboz error code: " + std::to_string(result));
-
-			std::cout << info.compressedSize << " " << info.uncompressedSize << " " << info.version << std::endl;
-
-			output.write(outputData.get(), info.uncompressedSize);
+			output.write(outputData.get(), bytes);
 		}
 
 		void extractMDB1File(const std::filesystem::path source, const std::filesystem::path targetDir, FileInfo fileInfo, uint64_t offset, bool decompress) {
@@ -454,25 +437,13 @@ namespace dscstools {
 			if (!input.good())
 				throw std::runtime_error("Error: something went wrong while reading " + path.string());
 			
-			doboz::Decompressor decomp;
-			doboz::CompressionInfo info;
-			doboz::Result result = decomp.getCompressionInfo(data.get(), length, info);
 
 			if (length != 0) {
-				if (result == doboz::RESULT_OK && info.uncompressedSize != 0 && info.version == 0 && info.compressedSize == length)
-					return { (uint32_t)info.uncompressedSize, (uint32_t)info.compressedSize, static_cast<uint32_t>(crc.checksum()), std::move(data) };
 
 				if (compress >= normal) {
-					doboz::Compressor comp;
-					//size_t destSize;
-					//auto outputData = std::make_unique<char[]>(comp.getMaxCompressedSize(length));
-					//doboz::Result res = comp.compress(data.get(), length, outputData.get(), comp.getMaxCompressedSize(length), destSize);
 
 					auto outputData = std::make_unique<char[]>(LZ4_compressBound(length));
-					auto destSize = LZ4_compress_default(data.get(), outputData.get(), length, LZ4_compressBound(length));
-
-					//if (res != doboz::RESULT_OK)
-					//	throw std::runtime_error("Error: something went wrong while compressing, doboz error code: " + std::to_string(res));
+					auto destSize = LZ4_compress_HC(data.get(), outputData.get(), length, LZ4_compressBound(length), LZ4HC_CLEVEL_MAX);
 
 					if (destSize + 4 < static_cast<size_t>(length))
 						return { (uint32_t)length, (uint32_t)destSize, static_cast<uint32_t>(crc.checksum()), std::move(outputData) };
@@ -538,7 +509,7 @@ namespace dscstools {
 			size_t numFiles = files.size();
 			progressStream << "Start writing " << numFiles << " files..." << std::endl;
 
-			uint32_t offset = 0;
+			uint64_t offset = 0;
 			std::map<uint32_t, size_t> dataMap;
 
 			for (auto file : files) {
@@ -603,7 +574,7 @@ namespace dscstools {
 			std::streamoff length = output.tellp();
 			output.seekp(0, std::ios::beg);
 
-			header.totalSize = (uint32_t)length;
+			header.totalSize = length;
 			header.dataEntryCount = (uint32_t)header3.size();
 			output.write(reinterpret_cast<char*>(&header), sizeof(header));
 
