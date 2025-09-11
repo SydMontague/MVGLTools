@@ -1,5 +1,6 @@
 
 #include "include/EXPA.h"
+#include <bitset>
 #include <stdint.h>
 #include <fstream>
 #include <iostream>
@@ -43,18 +44,25 @@ namespace dscstools {
 					switch (type) {
 						case 2:
 							tree.add("int " + std::to_string(i), "int"); break; 
+						case 3:
+							tree.add("short " + std::to_string(i), "short"); break; 
 						case 9:
-							tree.add("int2 " + std::to_string(i), "int"); break; 
+							tree.add("bool " + std::to_string(i), "bool"); break; 
 						case 4:
 							tree.add("byte " + std::to_string(i), "byte"); break; 
 						case 5:
 							tree.add("float " + std::to_string(i), "float"); break; 
+						case 6:
+							tree.add("string3 " + std::to_string(i), "string"); break; 
 						case 7:
 							tree.add("string " + std::to_string(i), "string"); break;
 						case 8:
 							tree.add("string2 " + std::to_string(i), "string"); break;
+						case 10:
+							tree.add("empty " + std::to_string(i), "empty"); break; 
+							break;
 						default:
-							std::cout << type << "\n";
+							std::cout << "Unknown Type " << type << "\n";
 					
 					}
 				}
@@ -107,7 +115,10 @@ namespace dscstools {
 			return formatValue.get();
 		}
 
-		uint32_t getEntrySize(const std::string &type, uint32_t currentSize) {
+		uint32_t getEntrySize(const std::string &type, uint32_t currentSize, int32_t& bitOffset) {
+			if(type != "bool")
+				bitOffset = 0;
+
 			if (type == "byte")
 				return 1;
 			if (type == "short")
@@ -120,16 +131,29 @@ namespace dscstools {
 				return 8 + align(currentSize, 8);
 			else if (type == "int array")
 				return 16 + align(currentSize, 8);
+			if(type == "bool") {
+				if(bitOffset++ == 0) return 4;
+			}
 
 			return 0;
 		}
 
-		void writeEXPAEntry(std::ofstream &output, char* &ptr, const std::string &type) {
+		void writeEXPAEntry(std::ofstream &output, char* &ptr, const std::string &type, int32_t& bitOffset) {
 			// TODO remove boilerplate
+			if(type != "bool") {
+				if(bitOffset > 0)
+					ptr += 4;
+
+				bitOffset = 0;
+			}
+
 			if (type == "int") {
 				ptr = ptr + align((std::size_t)ptr, 4);
 				output << *reinterpret_cast<int32_t*>(ptr);
 				ptr += 4;
+			}
+			if(type == "empty") {
+				output << std::quoted("", '\"', '\"');
 			}
 			else if (type == "float") {
 				ptr = ptr + align((std::size_t)ptr, 4);
@@ -162,6 +186,15 @@ namespace dscstools {
 				for (uint32_t i = 0; i < elemCount; i++)
 					output << arrPtr[i + 2] << ((i != (elemCount - 1)) ? " " : "");
 				ptr += 8;
+			}
+			else if (type == "bool") {
+				ptr = ptr + align((std::size_t)ptr, 4);
+				output << ((*reinterpret_cast<int32_t*>(ptr) >> bitOffset) & 1);
+				bitOffset++;
+				if (bitOffset >= 32) {
+					ptr += 4;
+					bitOffset = 0;
+				}
 			}
 		}
 
@@ -201,6 +234,8 @@ namespace dscstools {
 			}
 			else if (!std::filesystem::is_directory(target))
 				throw std::invalid_argument("Error: target path is not a directory.");
+
+			std::cout << source << "\n";
 
 			std::ifstream input(source, std::ios::in | std::ios::binary);
 			input.seekg(0, std::ios::end);
@@ -278,6 +313,7 @@ namespace dscstools {
 					char* localOffset = table.tablePtr + i * (table.entrySize() + align(table.entrySize(), 8)) + tableHeaderSize;
 
 					localOffset += align((uint64_t)localOffset, 8);
+					int32_t bitOffset = 0;
 
 					for (auto var : formatValue) {
 						if (first)
@@ -285,7 +321,7 @@ namespace dscstools {
 						else
 							output << ",";
 
-						writeEXPAEntry(output, localOffset, var.second.data());
+						writeEXPAEntry(output, localOffset, var.second.data(), bitOffset);
 					}
 					output << std::endl;
 				}
@@ -309,11 +345,14 @@ namespace dscstools {
 
 		uint32_t convertTypeMapping(std::string& type) {
 			if(type == "int") return 2;
-			if(type == "int2") return 9;
+			if(type == "short") return 3;
+			if(type == "bool") return 9;
 			if(type == "byte") return 4;
 			if(type == "float") return 5;
+			if(type == "string3") return 6;
 			if(type == "string") return 7;
 			if(type == "string2") return 8;
+			if(type == "empty") return 10;
 
 			return 0xFFFFFFFF;
 		}
@@ -392,8 +431,9 @@ namespace dscstools {
 				}
 
 				uint32_t entrySize = 0;
+				int32_t bitOffset = 0;
 				for (auto entry : header)
-					entrySize += getEntrySize(entry, entrySize);
+					entrySize += getEntrySize(entry, entrySize, bitOffset);
 
 				entrySize += align(entrySize, 8);
 				uint32_t count = (uint32_t)std::distance(countParser.begin(), countParser.end());
@@ -445,6 +485,8 @@ namespace dscstools {
 					uint32_t entrySize = 0;
 
 					int32_t col_counter = -1;
+					int32_t bitOffset = 0;
+					std::bitset<32> boolSet{};
 					for (auto& col : row) {
 						++col_counter;
 						//const auto& structEntry = (*itr++);
@@ -455,6 +497,14 @@ namespace dscstools {
 
 						try
 						{
+							if(type != "bool" && bitOffset > 0) {
+								entrySize += 4;
+								bitOffset = 0;
+								uint32_t value = boolSet.to_ulong();
+								output.write(reinterpret_cast<char*>(&value), 4);
+								boolSet = {};
+							}
+
 							// TODO remove boilerplate
 							if (type == "byte") {
 								int8_t value = std::stoi(col);
@@ -517,11 +567,28 @@ namespace dscstools {
 
 								entrySize += 16 + paddingSize;
 							}
+							else if(type == "bool") {
+								uint32_t paddingSize = align(entrySize, 4);
+								std::vector<char> padding(paddingSize, PADDING_BYTE);
+								output.write(padding.data(), paddingSize);
+								entrySize += paddingSize;
+
+								int8_t value = std::stoi(col);
+								boolSet.set(bitOffset++, value);
+							}
 						}
 						catch (const std::exception& ex)
 						{
 							throw std::invalid_argument(conversionErrorMessage(col, type, source.filename().string(), filename, colName, col_counter, row_counter));
 						}
+					}
+
+					if(bitOffset > 0) {
+						entrySize += 4;
+						bitOffset = 0;
+						uint32_t value = boolSet.to_ulong();
+						output.write(reinterpret_cast<char*>(&value), 4);
+						boolSet = {};
 					}
 
 					if (align(entrySize, 8) != 0) {
