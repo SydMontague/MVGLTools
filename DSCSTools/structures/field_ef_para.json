@@ -10,7 +10,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0102": {
     "id": "int",
@@ -23,7 +25,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0201": {
     "id": "int",
@@ -36,7 +40,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0302": {
     "id": "int",
@@ -49,7 +55,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0405": {
     "id": "int",
@@ -62,7 +70,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0503": {
     "id": "int",
@@ -75,7 +85,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0505": {
     "id": "int",
@@ -88,7 +100,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0506": {
     "id": "int",
@@ -101,7 +115,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0601": {
     "id": "int",
@@ -114,7 +130,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t0801": {
     "id": "int",
@@ -127,7 +145,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t1001": {
     "id": "int",
@@ -140,7 +160,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t1102": {
     "id": "int",
@@ -153,7 +175,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t2001": {
     "id": "int",
@@ -166,7 +190,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t2101": {
     "id": "int",
@@ -179,7 +205,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t2401": {
     "id": "int",
@@ -192,7 +220,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t2406": {
     "id": "int",
@@ -205,7 +235,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t2501": {
     "id": "int",
@@ -218,7 +250,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "t3001": {
     "id": "int",
@@ -231,7 +265,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0101": {
     "id": "int",
@@ -244,7 +280,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0102": {
     "id": "int",
@@ -257,7 +295,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0103": {
     "id": "int",
@@ -270,7 +310,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0105": {
     "id": "int",
@@ -283,7 +325,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0201": {
     "id": "int",
@@ -296,7 +340,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0202": {
     "id": "int",
@@ -309,7 +355,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0203": {
     "id": "int",
@@ -322,7 +370,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0204": {
     "id": "int",
@@ -335,7 +385,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0205": {
     "id": "int",
@@ -348,7 +400,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0301": {
     "id": "int",
@@ -361,7 +415,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0401": {
     "id": "int",
@@ -374,7 +430,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0402": {
     "id": "int",
@@ -387,7 +445,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0403": {
     "id": "int",
@@ -400,7 +460,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0404": {
     "id": "int",
@@ -413,7 +475,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0405": {
     "id": "int",
@@ -426,7 +490,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0501": {
     "id": "int",
@@ -439,7 +505,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0502": {
     "id": "int",
@@ -452,7 +520,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0503": {
     "id": "int",
@@ -465,7 +535,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0504": {
     "id": "int",
@@ -478,7 +550,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0505": {
     "id": "int",
@@ -491,7 +565,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0506": {
     "id": "int",
@@ -504,7 +580,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0601": {
     "id": "int",
@@ -517,7 +595,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0602": {
     "id": "int",
@@ -530,7 +610,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0603": {
     "id": "int",
@@ -543,7 +625,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0701": {
     "id": "int",
@@ -556,7 +640,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0702": {
     "id": "int",
@@ -569,7 +655,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0703": {
     "id": "int",
@@ -582,7 +670,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0704": {
     "id": "int",
@@ -595,7 +685,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0705": {
     "id": "int",
@@ -608,7 +700,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0707": {
     "id": "int",
@@ -621,7 +715,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0804": {
     "id": "int",
@@ -634,7 +730,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d0901": {
     "id": "int",
@@ -647,7 +745,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1101": {
     "id": "int",
@@ -660,7 +760,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1102": {
     "id": "int",
@@ -673,7 +775,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1103": {
     "id": "int",
@@ -686,7 +790,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1105": {
     "id": "int",
@@ -699,7 +805,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1106": {
     "id": "int",
@@ -712,7 +820,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1107": {
     "id": "int",
@@ -725,7 +835,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1109": {
     "id": "int",
@@ -738,7 +850,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1110": {
     "id": "int",
@@ -751,7 +865,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1201": {
     "id": "int",
@@ -764,7 +880,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1202": {
     "id": "int",
@@ -777,7 +895,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1203": {
     "id": "int",
@@ -790,7 +910,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1301": {
     "id": "int",
@@ -803,7 +925,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1302": {
     "id": "int",
@@ -816,7 +940,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1403": {
     "id": "int",
@@ -829,7 +955,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1411": {
     "id": "int",
@@ -842,7 +970,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1417": {
     "id": "int",
@@ -855,7 +985,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1501": {
     "id": "int",
@@ -868,7 +1000,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1502": {
     "id": "int",
@@ -881,7 +1015,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1503": {
     "id": "int",
@@ -894,7 +1030,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d1705": {
     "id": "int",
@@ -907,7 +1045,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d2001": {
     "id": "int",
@@ -920,7 +1060,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d3701": {
     "id": "int",
@@ -933,7 +1075,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d3702": {
     "id": "int",
@@ -946,7 +1090,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d3802": {
     "id": "int",
@@ -959,7 +1105,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d4102": {
     "id": "int",
@@ -972,7 +1120,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d4103": {
     "id": "int",
@@ -985,7 +1135,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d9001": {
     "id": "int",
@@ -998,7 +1150,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d9002": {
     "id": "int",
@@ -1011,7 +1165,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d9101": {
     "id": "int",
@@ -1024,7 +1180,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d9201": {
     "id": "int",
@@ -1037,7 +1195,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d9202": {
     "id": "int",
@@ -1050,7 +1210,9 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   },
   "d9301": {
     "id": "int",
@@ -1063,6 +1225,8 @@
     "unk7": "float",
     "unk8": "float",
     "unk9": "int",
-    "unk10": "int"
+    "unk10": "int",
+    "unk11": "int",
+    "unk12": "int"
   }
 }

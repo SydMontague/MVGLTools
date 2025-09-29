@@ -10,7 +10,9 @@
     "unk7": "short",
     "unk8": "short",
     "unk9": "short",
-    "unk10": "short"
+    "unk10": "short",
+    "unk11": "short",
+    "unk12": "short"
   },
   "ranking_reward": {
     "id": "int",

@@ -7,7 +7,8 @@
     "unk4": "int",
     "unk5": "int",
     "unk6": "int",
-    "unk7": "int"
+    "unk7": "int",
+    "unk8": "int"
   },
   "d1802": {
     "id": "int",
@@ -17,7 +18,8 @@
     "unk4": "int",
     "unk5": "int",
     "unk6": "int",
-    "unk7": "int"
+    "unk7": "int",
+    "unk8": "int"
   },
   "d1803": {
     "id": "int",
@@ -27,7 +29,8 @@
     "unk4": "int",
     "unk5": "int",
     "unk6": "int",
-    "unk7": "int"
+    "unk7": "int",
+    "unk8": "int"
   },
   "d2002": {
     "id": "int",
@@ -37,7 +40,8 @@
     "unk4": "int",
     "unk5": "int",
     "unk6": "int",
-    "unk7": "int"
+    "unk7": "int",
+    "unk8": "int"
   },
   "d2003": {
     "id": "int",
@@ -47,7 +51,8 @@
     "unk4": "int",
     "unk5": "int",
     "unk6": "int",
-    "unk7": "int"
+    "unk7": "int",
+    "unk8": "int"
   },
   "d3602": {
     "id": "int",
@@ -57,6 +62,7 @@
     "unk4": "int",
     "unk5": "int",
     "unk6": "int",
-    "unk7": "int"
+    "unk7": "int",
+    "unk8": "int"
   }
 }

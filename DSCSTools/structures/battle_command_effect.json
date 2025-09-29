@@ -7,7 +7,8 @@
     "unk4": "int",
     "unk5": "int",
     "targetEffects": "int array",
-    "unk7": "int array"
+    "unk7": "int array",
+    "unk8": "int"
   },
   "item": {
     "unk1": "string",
