@@ -37,7 +37,12 @@ namespace dscstools
         stream.write(reinterpret_cast<const char*>(&data), sizeof(T));
     }
 
-    constexpr void write(std::ofstream& stream, void* data, size_t size)
+    constexpr void write(std::ofstream& stream, const void* data, size_t size)
+    {
+        stream.write(reinterpret_cast<const char*>(data), size);
+    }
+
+    constexpr void write(std::ofstream& stream, const char* data, size_t size)
     {
         stream.write(reinterpret_cast<const char*>(data), size);
     }

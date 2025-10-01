@@ -31,6 +31,8 @@ namespace
     constexpr EntryType convertEntryType(std::string val)
     {
         std::map<std::string, EntryType> map;
+        map["byte"]      = EntryType::INT8;
+        map["short"]     = EntryType::INT16;
         map["int"]       = EntryType::INT32;
         map["int array"] = EntryType::INT_ARRAY;
         map["float"]     = EntryType::FLOAT;
@@ -176,7 +178,8 @@ namespace
                 auto array                             = get<std::vector<int32_t>>(value);
                 *reinterpret_cast<uint32_t*>(data)     = static_cast<int32_t>(array.size());
                 *reinterpret_cast<uint64_t*>(data + 8) = 0;
-                return CHNKEntry(base_offset + 8, array);
+                if (!array.empty()) return CHNKEntry(base_offset + 8, array);
+                break;
             }
 
             case EntryType::EMPTY: [[fallthrough]];
@@ -228,16 +231,34 @@ namespace dscstools::expa
     void bla()
     {
         constexpr auto path1 =
-            "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSTS/data/battle_formation.mbe";
+            "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSTS/data/field_npc_t0303.mbe";
         constexpr auto path2 =
             "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSDBP/data/digimon_common_para.mbe";
-        auto result = readEXPA<EXPA64>(path1);
 
-        writeEXPA<EXPA64>(result.value(), "expa64.mbe");
-        std::cout << result.error_or("Success") << "\n";
-        result = readEXPA<EXPA32>(path2);
-        writeEXPA<EXPA32>(result.value(), "expa32.mbe");
-        std::cout << result.error_or("Success") << "\n";
+        // std::filesystem::recursive_directory_iterator itr(
+        //     "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSDB/data/");
+        std::filesystem::recursive_directory_iterator itr(
+            "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSTS/data/");
+        for (const auto& file : itr)
+        {
+            if (!std::filesystem::is_regular_file(file)) continue;
+
+            std::cout << file.path().filename() << "\n";
+
+            auto result = readEXPA<EXPA64>(file);
+            if (result)
+                writeEXPA<EXPA64>(result.value(), "expa64/" / file.path().filename());
+            else
+                std::cout << result.error() << "\n";
+        }
+
+        // auto result = readEXPA<EXPA64>(path1);
+
+        // writeEXPA<EXPA64>(result.value(), "expa64.mbe");
+        //  std::cout << result.error_or("Success") << "\n";
+        //  result = readEXPA<EXPA32>(path2);
+        //  writeEXPA<EXPA32>(result.value(), "expa32.mbe");
+        //  std::cout << result.error_or("Success") << "\n";
     }
 
     std::vector<CHNKEntry>
@@ -350,7 +371,7 @@ namespace dscstools::expa
         : offset(offset)
     {
         value = std::vector<char>(data.size() * sizeof(int32_t));
-        std::copy(data.begin(), data.end(), value.begin());
+        std::copy_n(reinterpret_cast<const char*>(data.data()), value.size(), value.begin());
     }
 
     Structure EXPA32::getStructure(std::ifstream& stream, std::filesystem::path filePath, std::string tableName)
