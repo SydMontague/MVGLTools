@@ -8,6 +8,7 @@ target_sources(DSCSTools
 	SaveFile.cpp
 	AFS2.cpp
 	MDB1New.cpp
+	EXPANew.cpp
 )
 
 target_include_directories(DSCSTools 
