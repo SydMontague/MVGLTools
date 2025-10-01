@@ -1,5 +1,7 @@
 #include "EXPAnew.h"
 
+#include "../libs/csv-parser/parser.hpp"
+
 #include "Helpers.h"
 #include "boost/property_tree/json_parser.hpp"
 
@@ -15,6 +17,7 @@
 #include <fstream>
 #include <optional>
 #include <ranges>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <variant>
@@ -27,6 +30,30 @@ namespace
 
     constexpr auto STRUCTURE_FOLDER = "structures/";
     constexpr auto STRUCTURE_FILE   = "structures/structure.json";
+
+    struct CSVFile
+    {
+        std::vector<std::string> header;
+        std::vector<std::vector<std::string>> rows;
+
+        CSVFile(std::filesystem::path path)
+        {
+            std::ifstream stream(path);
+            aria::csv::CsvParser parser(stream);
+
+            for (const auto& row : parser)
+            {
+                std::vector<std::string> data;
+                for (const auto& field : row)
+                    data.push_back(field);
+
+                if (header.empty())
+                    header = data;
+                else
+                    rows.push_back(data);
+            }
+        }
+    };
 
     constexpr EntryType convertEntryType(std::string val)
     {
@@ -107,6 +134,63 @@ namespace
             case EntryType::EMPTY: return 0;
             case EntryType::INT_ARRAY: return 16;
             default: return 0;
+        }
+    }
+
+    std::string getCSVString(const EntryType& type, const EntryValue& value)
+    {
+        switch (type)
+        {
+            case EntryType::INT32: return std::format("{}", std::get<int32_t>(value));
+            case EntryType::INT16: return std::format("{}", std::get<int16_t>(value));
+            case EntryType::INT8: return std::format("{}", std::get<int8_t>(value));
+            case EntryType::FLOAT: return std::format("{}", std::get<float>(value));
+            case EntryType::BOOL: return std::format("{}", std::get<bool>(value));
+
+            case EntryType::STRING3: [[fallthrough]];
+            case EntryType::STRING: [[fallthrough]];
+            case EntryType::STRING2:
+            {
+                std::stringstream sstream;
+                sstream << std::quoted(std::get<std::string>(value), '\"', '\"');
+                return sstream.str();
+            }
+            case EntryType::INT_ARRAY:
+            {
+                auto data = std::get<std::vector<int32_t>>(value) |
+                            std::views::transform([](auto val) { return std::to_string(val); });
+                return std::views::join_with(data, ' ') | std::ranges::to<std::string>();
+            }
+            case EntryType::EMPTY: [[fallthrough]];
+            case EntryType::UNK0: [[fallthrough]];
+            case EntryType::UNK1: [[fallthrough]];
+            default: return "";
+        }
+    }
+
+    EntryValue getCSVValue(const EntryType& type, const std::string& value)
+    {
+        switch (type)
+        {
+            default:
+            case EntryType::UNK0: [[fallthrough]];
+            case EntryType::UNK1: [[fallthrough]];
+            case EntryType::EMPTY: return std::nullopt;
+
+            case EntryType::INT32: return std::stoi(value);
+            case EntryType::INT16: return static_cast<int16_t>(std::stoi(value));
+            case EntryType::INT8: return static_cast<int8_t>(std::stoi(value));
+            case EntryType::FLOAT: return std::stof(value);
+
+            case EntryType::STRING3: [[fallthrough]];
+            case EntryType::STRING: [[fallthrough]];
+            case EntryType::STRING2: return value;
+
+            case EntryType::BOOL: return value == "true";
+            case EntryType::INT_ARRAY:
+                return value | std::views::split(' ') | std::ranges::to<std::vector<std::string>>() |
+                       std::views::transform([](const auto& val) { return std::stoi(val); }) |
+                       std::ranges::to<std::vector<int32_t>>();
         }
     }
 
@@ -223,6 +307,26 @@ namespace
             }
         }
     }
+
+    std::vector<StructureEntry> getCSVStructure(const CSVFile& csv)
+    {
+        auto lambda = [](const auto& val)
+        { return StructureEntry{val, convertEntryType(val.substr(0, val.find_last_of(" ")))}; };
+
+        return csv.header | std::views::transform(lambda) | std::ranges::to<std::vector<StructureEntry>>();
+    }
+
+    Structure getStructureCSV(const CSVFile& csv, std::filesystem::path filePath, const std::string& tableName)
+    {
+        auto structure = getCSVStructure(csv);
+
+        auto fromFile = getStructureFromFile(filePath, tableName);
+        if (fromFile.empty()) return {structure};
+        if (fromFile.size() != structure.size()) return {structure};
+
+        // file has priority over header, as header might resolve to EMPTY
+        return {fromFile};
+    }
 } // namespace
 
 namespace dscstools::expa
@@ -238,16 +342,29 @@ namespace dscstools::expa
         // std::filesystem::recursive_directory_iterator itr(
         //     "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSDB/data/");
         std::filesystem::recursive_directory_iterator itr(
-            "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSTS/data/");
+            "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSDB/data/");
         for (const auto& file : itr)
         {
             if (!std::filesystem::is_regular_file(file)) continue;
 
-            std::cout << file.path().filename() << "\n";
+            std::cout << "Extract " << file.path().filename() << "\n";
 
-            auto result = readEXPA<EXPA64>(file);
+            auto result = readEXPA<EXPA32>(file);
             if (result)
-                writeEXPA<EXPA64>(result.value(), "expa64/" / file.path().filename());
+            {
+                std::ignore = exportCSV(result.value(), std::format("mbe32/{}/", file.path().filename().string()));
+            }
+            else
+                std::cout << result.error() << "\n";
+        }
+
+        std::filesystem::directory_iterator itr2("mbe32/");
+        for (const auto& file : itr2)
+        {
+            std::cout << "Rebuild " << file.path().filename() << "\n";
+
+            auto result = importCSV(file);
+            if (result) { std::ignore = writeEXPA<EXPA32>(result.value(), "expa32/" / file.path().filename()); }
             else
                 std::cout << result.error() << "\n";
         }
@@ -261,13 +378,13 @@ namespace dscstools::expa
         //  std::cout << result.error_or("Success") << "\n";
     }
 
-    std::vector<CHNKEntry>
-    Structure::writeEXPA(uint32_t base_offset, char* data, const std::vector<EntryValue>& entries) const
+    EXPAEntry Structure::writeEXPA(const std::vector<EntryValue>& entries) const
     {
         auto offset     = 0;
         auto bitCounter = 0;
         std::bitset<32> currentBool;
         std::vector<CHNKEntry> chunkEntries;
+        std::vector<char> new_data(getEXPASize(), 0xCC);
 
         for (const auto& val : std::views::zip(structure, entries))
         {
@@ -278,7 +395,7 @@ namespace dscstools::expa
             {
                 if (bitCounter > 0)
                 {
-                    *reinterpret_cast<uint32_t*>(data + offset) = currentBool.to_ulong();
+                    *reinterpret_cast<uint32_t*>(new_data.data() + offset) = currentBool.to_ulong();
                     offset += sizeof(uint32_t);
                     bitCounter  = 0;
                     currentBool = {};
@@ -286,7 +403,7 @@ namespace dscstools::expa
                 offset = ceilInteger(offset, getAlignment(type));
             }
 
-            auto result = writeEXPAEntry(base_offset + offset, data + offset, type, entry);
+            auto result = writeEXPAEntry(offset, new_data.data() + offset, type, entry);
             if (result) chunkEntries.push_back(result.value());
 
             if (type == EntryType::BOOL)
@@ -297,11 +414,11 @@ namespace dscstools::expa
 
         if (bitCounter > 0)
         {
-            *reinterpret_cast<uint32_t*>(data + offset) = currentBool.to_ulong();
+            *reinterpret_cast<uint32_t*>(new_data.data() + offset) = currentBool.to_ulong();
             offset += sizeof(uint32_t);
         }
 
-        return chunkEntries;
+        return {new_data, chunkEntries};
     }
 
     std::vector<EntryValue> Structure::readEXPA(const char* data) const
@@ -331,6 +448,33 @@ namespace dscstools::expa
         }
 
         return values;
+    }
+
+    std::vector<EntryValue> Structure::readCSV(const std::vector<std::string>& data) const
+    {
+        return std::views::zip_transform([](const auto& val, const auto& val2) { return getCSVValue(val.type, val2); },
+                                         structure,
+                                         data) |
+               std::ranges::to<std::vector<EntryValue>>();
+    }
+
+    std::string Structure::getCSVHeader() const
+    {
+        return structure | std::views::transform([](const auto& val) { return val.name; }) |
+               std::views::join_with(',') | std::ranges::to<std::string>();
+    }
+
+    std::string Structure::writeCSV(const std::vector<EntryValue>& entries) const
+    {
+        std::stringstream stream;
+        auto result = structure | std::views::transform([](const auto& val) { return val.name; }) |
+                      std::views::join_with(',') | std::ranges::to<std::string>();
+        stream << result << "\n";
+
+        return std::views::zip_transform([](const auto& val, const auto& val2) { return getCSVString(val.type, val2); },
+                                         structure,
+                                         entries) |
+               std::views::join_with(',') | std::ranges::to<std::string>();
     }
 
     uint32_t Structure::getEXPASize() const
@@ -392,11 +536,52 @@ namespace dscstools::expa
         auto fromFile = getStructureFromFile(filePath, tableName);
         if (fromFile.empty()) return {structure};
         if (fromFile.size() != structureCount) return {structure};
-        auto mismatch =
-            std::ranges::any_of(std::ranges::views::zip(structure, fromFile),
-                                [](const auto& val) { return std::get<0>(val).type != std::get<1>(val).type; });
+
+        auto lambda   = [](const auto& val) { return std::get<0>(val).type != std::get<1>(val).type; };
+        auto mismatch = std::ranges::any_of(std::ranges::views::zip(structure, fromFile), lambda);
         if (mismatch) return {structure};
 
         return {fromFile};
+    }
+
+    std::expected<void, std::string> exportCSV(const FinalFile& file, std::filesystem::path target)
+    {
+        std::filesystem::create_directories(target);
+        int32_t table_id = 0;
+        for (const auto& table : file.tables)
+        {
+            auto path = target / std::format("{:03}_{}.csv", table_id++, table.name);
+            std::ofstream stream(path);
+
+            stream << table.structure.getCSVHeader() << "\n";
+            std::ranges::for_each(table.entries, [&](auto val) { stream << table.structure.writeCSV(val) << "\n"; });
+        }
+
+        return {};
+    }
+
+    std::expected<FinalFile, std::string> importCSV(std::filesystem::path source)
+    {
+        std::filesystem::directory_iterator itr(source);
+        std::vector<std::filesystem::path> files;
+        for (auto val : itr)
+            if (val.is_regular_file()) files.push_back(val);
+        std::ranges::sort(files);
+
+        std::vector<FinalTable> tables;
+
+        for (auto file : files)
+        {
+            CSVFile csv(file);
+
+            auto name      = file.stem().generic_string().substr(4);
+            auto structure = getStructureCSV(csv, source, name);
+            auto entries   = csv.rows | std::views::transform([&](const auto& val) { return structure.readCSV(val); }) |
+                           std::ranges::to<std::vector<std::vector<EntryValue>>>();
+
+            tables.emplace_back(name, structure, entries);
+        }
+
+        return FinalFile{tables};
     }
 } // namespace dscstools::expa

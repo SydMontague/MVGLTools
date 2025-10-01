@@ -4,6 +4,7 @@
 #include <expected>
 #include <filesystem>
 #include <fstream>
+#include <ranges>
 #include <variant>
 
 namespace dscstools::expa
@@ -38,14 +39,23 @@ namespace dscstools::expa
         EntryType type;
     };
 
+    struct EXPAEntry
+    {
+        std::vector<char> data;
+        std::vector<CHNKEntry> chunk;
+    };
+
     struct Structure
     {
         std::vector<StructureEntry> structure;
 
-        std::vector<CHNKEntry>
-        writeEXPA(uint32_t base_offset, char* data, const std::vector<EntryValue>& entries) const;
+        EXPAEntry writeEXPA(const std::vector<EntryValue>& entries) const;
 
         std::vector<EntryValue> readEXPA(const char* data) const;
+
+        std::string getCSVHeader() const;
+        std::string writeCSV(const std::vector<EntryValue>& entries) const;
+        std::vector<EntryValue> readCSV(const std::vector<std::string>& data) const;
 
         uint32_t getEXPASize() const;
 
@@ -112,7 +122,7 @@ namespace dscstools::expa
     };
 
     template<EXPA expa>
-    void writeEXPA(const FinalFile& file, std::filesystem::path path);
+    std::expected<void, std::string> writeEXPA(const FinalFile& file, std::filesystem::path path);
 
     template<EXPA expa>
     std::expected<FinalFile, std::string> readEXPA(std::filesystem::path path);
@@ -121,8 +131,13 @@ namespace dscstools::expa
 // implementation
 namespace dscstools::expa
 {
+
+    std::expected<void, std::string> exportCSV(const FinalFile& file, std::filesystem::path target);
+
+    std::expected<FinalFile, std::string> importCSV(std::filesystem::path source);
+
     template<EXPA expa>
-    void writeEXPA(const FinalFile& file, std::filesystem::path path)
+    std::expected<void, std::string> writeEXPA(const FinalFile& file, std::filesystem::path path)
     {
         std::ofstream stream(path, std::ios::binary);
         std::vector<CHNKEntry> chnk;
@@ -153,9 +168,17 @@ namespace dscstools::expa
 
             for (const auto& entry : table.entries)
             {
-                std::vector<char> data(actualStructureSize, 0xCC);
-                chnk.append_range(structure.writeEXPA(static_cast<uint32_t>(stream.tellp()), data.data(), entry));
-                stream.write(data.data(), data.size());
+                auto start  = stream.tellp();
+                auto result = structure.writeEXPA(entry);
+                stream.write(result.data.data(), result.data.size());
+
+                auto lambda = [=](CHNKEntry& val)
+                {
+                    val.offset += static_cast<uint32_t>(start);
+                    return val;
+                };
+
+                chnk.append_range(std::ranges::views::transform(result.chunk, lambda));
             }
         }
 
@@ -167,6 +190,8 @@ namespace dscstools::expa
             write(stream, static_cast<uint32_t>(entry.value.size()));
             write(stream, entry.value.data(), entry.value.size());
         }
+
+        return {};
     }
 
     template<EXPA expa>
