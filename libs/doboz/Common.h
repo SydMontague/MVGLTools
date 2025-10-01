@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <climits>
 #include <cassert>
+#include <cstddef>
 
 #if defined(_MSC_VER)
 #define DOBOZ_FORCEINLINE __forceinline

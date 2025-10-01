@@ -1,18 +1,19 @@
-﻿cmake_minimum_required (VERSION 3.14)
+﻿cmake_minimum_required (VERSION 3.28)
 
 project ("DSCSTools" 
             VERSION 2.0.0 
             DESCRIPTION "Tools for Digimon Story Cyber Sleuth"
             HOMEPAGE_URL "https://github.com/SydMontague/DSCSTools")
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
+set(CXX_SCAN_FOR_MODULES OFF)
 
 include(cmake/CPM.cmake)
 
 if (MSVC)
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS -D_WIN32_WINNT=0x0601") # Windows 7
 else()
-	set(CMAKE_CXX_FLAGS -pthread)
+#	set(CMAKE_CXX_FLAGS -pthread)
 endif()
 
 option(BUILD_SHARED_LIBS "Build Using Shared Libs" OFF)
@@ -20,6 +21,8 @@ option(BUILD_SHARED_LIBS "Build Using Shared Libs" OFF)
 # --- Libraries ---
 # doboz
 add_subdirectory("libs/doboz")
+# lz4
+add_subdirectory("libs/lz4")
 
 # boost
 if(WIN32)
@@ -28,9 +31,9 @@ endif()
 
 CPMAddPackage(
   NAME Boost
-  VERSION 1.86.0
+  VERSION 1.89.0
   GITHUB_REPOSITORY "boostorg/boost"
-  GIT_TAG "boost-1.86.0"
+  GIT_TAG "boost-1.89.0"
 )
 
 # Include sub-projects.

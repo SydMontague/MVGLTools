@@ -369,12 +369,13 @@ namespace dscstools {
 				uint16_t parentNode;
 				uint16_t val1;
 				std::vector<std::string> list;
-				std::vector<std::string> nodeList;
 				bool left;
 			};
 
 			std::vector<TreeNode> nodes = { { 0xFFFF, 0, 0, "" } };
-			std::deque<QueueEntry> queue = { { 0, 0xFFFF, fileNames, std::vector<std::string>(), false } };
+			std::deque<QueueEntry> queue = { { 0, 0xFFFF, fileNames, false } };
+
+			std::vector<std::string> nodeList;
 
 			while (!queue.empty()) {
 				QueueEntry entry = queue.front();
@@ -385,7 +386,7 @@ namespace dscstools {
 				std::vector <std::string> withNode;
 
 				for (auto file : entry.list) {
-					if (std::find(entry.nodeList.begin(), entry.nodeList.end(), file) == entry.nodeList.end())
+					if (std::find(nodeList.begin(), nodeList.end(), file) == nodeList.end())
 						nodeless.push_back(file);
 					else
 						withNode.push_back(file);
@@ -421,12 +422,15 @@ namespace dscstools {
 						left.push_back(file);
 				}
 
-				std::vector<std::string> newNodeList = entry.nodeList;
-				newNodeList.push_back(child.name);
+				nodeList.push_back(child.name);
 
-				if (left.size() > 0) queue.push_front({ static_cast<uint16_t>(nodes.size()), child.compareBit, left, newNodeList, true });
-				if (right.size() > 0) queue.push_front({ static_cast<uint16_t>(nodes.size()), child.compareBit, right, newNodeList, false });
+				if (left.size() > 0) queue.push_front({ static_cast<uint16_t>(nodes.size()), child.compareBit, left, true });
+				if (right.size() > 0) queue.push_front({ static_cast<uint16_t>(nodes.size()), child.compareBit, right, false });
 				nodes.push_back(child);
+			}
+
+			for(const auto& val : nodes) {
+				std::cout << val.name << "\n";
 			}
 
 			return nodes;
