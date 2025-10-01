@@ -118,7 +118,6 @@ namespace dscstools::expa
     std::expected<FinalFile, std::string> readEXPA(std::filesystem::path path);
 } // namespace dscstools::expa
 
-
 // implementation
 namespace dscstools::expa
 {
@@ -211,7 +210,11 @@ namespace dscstools::expa
             stream.seekg(entryCount * ceilInteger<8>(entrySize), std::ios::cur);
 
             auto structureSize = structure.getEXPASize();
-            if (structureSize != entrySize) return std::unexpected("Structure size doesn't match entry size.");
+            if (structureSize != ceilInteger<8>(entrySize))
+            {
+                return std::unexpected(
+                    std::format("Structure size {} doesn't match entry size {}.", structureSize, entrySize));
+            }
         }
 
         alignStream<expa::ALIGN_STEP>(stream);

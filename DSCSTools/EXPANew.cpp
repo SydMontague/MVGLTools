@@ -16,6 +16,7 @@
 #include <optional>
 #include <ranges>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -252,7 +253,7 @@ namespace dscstools::expa
             auto type  = get<0>(val).type;
             auto entry = get<1>(val);
 
-            if (type != EntryType::BOOL)
+            if (type != EntryType::BOOL || bitCounter >= 32)
             {
                 if (bitCounter > 0)
                 {
@@ -292,16 +293,20 @@ namespace dscstools::expa
 
         for (const auto& val : structure)
         {
-            if (bitCounter != 0 || val.type != EntryType::BOOL)
+            if (val.type != EntryType::BOOL || bitCounter >= 32)
             {
+                if (bitCounter > 0) offset += getSize(EntryType::BOOL);
+
                 offset     = ceilInteger(offset, getAlignment(val.type));
                 bitCounter = 0;
             }
 
             values.push_back(readEXPAEntry(val.type, data + offset, bitCounter));
 
-            if (bitCounter == 0) offset += getSize(val.type);
-            if (val.type == EntryType::BOOL) bitCounter++;
+            if (val.type == EntryType::BOOL)
+                bitCounter++;
+            else
+                offset += getSize(val.type);
         }
 
         return values;
@@ -316,7 +321,7 @@ namespace dscstools::expa
 
         for (const auto& val : structure)
         {
-            if (bitCounter != 0 || val.type != EntryType::BOOL)
+            if (bitCounter == 0 || bitCounter >= 32 || val.type != EntryType::BOOL)
             {
                 currentSize = ceilInteger(currentSize, getAlignment(val.type));
                 bitCounter  = 0;
@@ -326,9 +331,7 @@ namespace dscstools::expa
             if (val.type == EntryType::BOOL) bitCounter++;
         }
 
-        if ((structure.size() % 2) == 0) currentSize = ceilInteger(currentSize, 8);
-
-        return currentSize;
+        return ceilInteger(currentSize, 8);
     }
 
     size_t Structure::getEntryCount() const
@@ -339,7 +342,7 @@ namespace dscstools::expa
     CHNKEntry::CHNKEntry(uint32_t offset, const std::string& data)
         : offset(offset)
     {
-        value = std::vector<char>(ceilInteger<4>(data.size() + 1));
+        value = std::vector<char>(ceilInteger<4>(data.size() + 2));
         std::copy(data.begin(), data.end(), value.begin());
     }
 
