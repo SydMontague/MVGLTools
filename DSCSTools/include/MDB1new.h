@@ -184,7 +184,7 @@ namespace dscstools::mdb1new::detail
         std::string name;
         std::filesystem::path path;
 
-        friend bool operator==(const TreeName& self, const TreeName& other) { return self.path == other.path; }
+        friend bool operator==(const TreeName& self, const TreeName& other) { return self.name == other.name; }
     };
 
     struct TreeNode
@@ -272,13 +272,12 @@ namespace dscstools::mdb1new::detail
             uint64_t parentNode;
             uint64_t compareBit;
             std::vector<TreeName> list;
+				    std::vector<TreeName> nodeList;
             bool isLeft;
         };
 
         std::vector<TreeNode> nodes  = {{INVALID, 0, 0, ""}};
-        std::deque<QueueEntry> queue = {{0, INVALID, fileNames, false}};
-
-        std::vector<TreeName> nodeList;
+        std::deque<QueueEntry> queue = {{0, INVALID, fileNames, {}, false}};
 
         while (!queue.empty())
         {
@@ -291,7 +290,7 @@ namespace dscstools::mdb1new::detail
 
             for (auto file : entry.list)
             {
-                if (std::find(nodeList.begin(), nodeList.end(), file) == nodeList.end())
+                if (std::find(entry.nodeList.begin(), entry.nodeList.end(), file) == entry.nodeList.end())
                     nodeless.push_back(file);
                 else
                     withNode.push_back(file);
@@ -331,10 +330,11 @@ namespace dscstools::mdb1new::detail
                     left.push_back(file);
             }
 
-            nodeList.push_back(child.name);
+            std::vector<TreeName> newNodeList = entry.nodeList;
+            newNodeList.push_back(child.name);
 
-            if (left.size() > 0) queue.push_front({nodes.size(), child.compareBit, std::move(left), true});
-            if (right.size() > 0) queue.push_front({nodes.size(), child.compareBit, std::move(right), false});
+            if (left.size() > 0) queue.push_front({nodes.size(), child.compareBit, std::move(left), newNodeList, true});
+            if (right.size() > 0) queue.push_front({nodes.size(), child.compareBit, std::move(right), newNodeList, false});
             nodes.push_back(child);
         }
 

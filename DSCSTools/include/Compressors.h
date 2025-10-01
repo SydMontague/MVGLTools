@@ -90,7 +90,7 @@ namespace dscstools
 
         static std::expected<std::vector<char>, std::string> compress(const std::vector<char>& input)
         {
-            std::vector<char> output(input.size());
+            std::vector<char> output(LZ4_compressBound(input.size()));
 
             auto result = LZ4_compress_HC(input.data(), output.data(), input.size(), output.size(), LZ4HC_CLEVEL_MAX);
             if (result == 0) return std::unexpected(std::format("Error: something went wrong while compressing."));
@@ -101,7 +101,7 @@ namespace dscstools
 
         static bool isCompressed(const std::vector<char>& input)
         {
-            std::vector<char> output(32);
+            std::vector<char> output(256);
             auto result =
                 LZ4_decompress_safe_partial(input.data(), output.data(), input.size(), output.size(), output.size());
 
