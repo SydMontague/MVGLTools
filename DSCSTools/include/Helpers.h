@@ -31,6 +31,29 @@ namespace dscstools
         return data;
     }
 
+    template<typename T>
+    constexpr void write(std::ofstream& stream, const T& data)
+    {
+        stream.write(reinterpret_cast<const char*>(&data), sizeof(T));
+    }
+
+    constexpr void write(std::ofstream& stream, const void* data, size_t size)
+    {
+        stream.write(reinterpret_cast<const char*>(data), size);
+    }
+
+    constexpr void write(std::ofstream& stream, const char* data, size_t size)
+    {
+        stream.write(reinterpret_cast<const char*>(data), size);
+    }
+
+    constexpr void write(std::ofstream& stream, const std::string& data, size_t size)
+    {
+        std::vector<char> copy(size);
+        std::ranges::copy(data, copy.begin());
+        stream.write(copy.data(), copy.size());
+    }
+
     constexpr uint32_t getChecksum(const std::vector<char>& data)
     {
         boost::crc_32_type crc;
@@ -38,4 +61,37 @@ namespace dscstools
         return crc.checksum();
     }
 
+    template<int32_t step>
+    constexpr int32_t ceilInteger(int32_t value)
+    {
+        return (value + step - 1) / step * step;
+    }
+
+    constexpr int32_t ceilInteger(int32_t value, int32_t step)
+    {
+        if (step == 0) return value;
+        return (value + step - 1) / step * step;
+    }
+
+    template<int32_t step>
+    constexpr void alignStream(std::ifstream& stream)
+    {
+        stream.seekg(ceilInteger<step>(stream.tellg()));
+    }
+
+    constexpr std::string wrapRegex(const std::string& in)
+    {
+        return "^" + in + "$";
+    }
+
 } // namespace dscstools
+
+namespace
+{
+    using namespace dscstools;
+
+    static_assert(ceilInteger<8>(76) == 80);
+    static_assert(ceilInteger<8>(8) == 8);
+    static_assert(ceilInteger(76, 8) == 80);
+    static_assert(ceilInteger(8, 8) == 8);
+} // namespace
