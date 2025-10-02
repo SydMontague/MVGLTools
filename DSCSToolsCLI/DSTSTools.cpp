@@ -9,7 +9,7 @@
 void printUse()
 {
     // clang-format off
-    std::cout << "DSTSTools v2.0.0-alpha1 by SydMontague | https://github.com/SydMontague/DSCSTools/" << std::endl;
+    std::cout << "DSTSTools v2.0.0-alpha2 by SydMontague | https://github.com/SydMontague/DSCSTools/" << std::endl;
     std::cout << "Modes:" << std::endl;
     std::cout << "	--extract <sourceFile> <targetFolder>" << std::endl;
     std::cout << "		Extracts the given MDB1 into a folder." << std::endl;
