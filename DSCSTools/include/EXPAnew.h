@@ -143,7 +143,7 @@ namespace dscstools::expa
             return std::unexpected("Target path already exists and is not a file.");
         if (path.has_parent_path()) std::filesystem::create_directories(path.parent_path());
 
-        std::ofstream stream(path, std::ios::binary);
+        std::ofstream stream(path, std::ios::out | std::ios::binary);
 
         if (!stream) return std::unexpected("Failed to write target file.");
 
@@ -216,7 +216,7 @@ namespace dscstools::expa
         if (!std::filesystem::exists(path)) return std::unexpected("Source path does not exist.");
         if (!std::filesystem::is_regular_file(path)) return std::unexpected("Source path does not lead to a file.");
 
-        std::ifstream stream(path);
+        std::ifstream stream(path, std::ios::in | std::ios::binary);
 
         if (!stream) return std::unexpected("Failed to read source file.");
 

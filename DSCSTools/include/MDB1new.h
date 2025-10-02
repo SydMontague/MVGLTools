@@ -132,8 +132,8 @@ namespace dscstools::mdb1new
     class dscs_ifstream : public std::ifstream
     {
     public:
-        dscs_ifstream(const std::filesystem::path path)
-            : std::ifstream(path, std::ios::in | std::ios::binary)
+        dscs_ifstream(const std::filesystem::path path, std::ios::openmode mode)
+            : std::ifstream(path, mode)
         {
         }
 
@@ -151,8 +151,8 @@ namespace dscstools::mdb1new
         using std::ofstream::ofstream;
 
     public:
-        dscs_ofstream(const std::filesystem::path path)
-            : std::ofstream(path, std::ios::out | std::ios::binary)
+        dscs_ofstream(const std::filesystem::path path, std::ios::openmode mode)
+            : std::ofstream(path, mode)
         {
         }
 
@@ -285,7 +285,7 @@ namespace dscstools::mdb1new::detail
 
     constexpr uint64_t INVALID = std::numeric_limits<uint64_t>::max();
 
-    constexpr inline TreeNode findFirstBitMismatch(const uint16_t first,
+    inline TreeNode findFirstBitMismatch(const uint16_t first,
                                                    const std::vector<TreeName>& nodeless,
                                                    const std::vector<TreeName>& withNode)
     {
@@ -460,7 +460,7 @@ namespace dscstools::mdb1new
 
     template<ArchiveType MDB>
     ArchiveInfo<MDB>::ArchiveInfo(std::filesystem::path path)
-        : input(path)
+        : input(path, std::ios::in | std::ios::binary)
     {
         if (!input) return;
 
@@ -595,7 +595,7 @@ namespace dscstools::mdb1new
         auto fileId = 0;
         std::map<uint32_t, size_t> dataMap;
         size_t offset = 0;
-        typename MDB::OutputStream output(target);
+        typename MDB::OutputStream output(target, std::ios::out | std::ios::binary);
 
         for (const auto& file : tree)
         {
