@@ -55,7 +55,8 @@ namespace
         }
     };
 
-    constexpr EntryType convertEntryType(std::string val)
+    // TODO clean up
+    inline EntryType convertEntryType(std::string val)
     {
         std::map<std::string, EntryType> map;
         map["byte"]      = EntryType::INT8;

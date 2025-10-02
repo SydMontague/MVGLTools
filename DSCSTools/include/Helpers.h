@@ -18,13 +18,13 @@ namespace dscstools
         return view.substr(0, std::min(firstNull, firstSpace));
     }
 
-    constexpr void log(std::string str)
+    inline void log(std::string str)
     {
         std::cout << str << std::endl;
     }
 
     template<typename T>
-    constexpr T read(std::ifstream& stream)
+    inline T read(std::ifstream& stream)
     {
         T data;
         stream.read(reinterpret_cast<char*>(&data), sizeof(T));
@@ -32,29 +32,29 @@ namespace dscstools
     }
 
     template<typename T>
-    constexpr void write(std::ofstream& stream, const T& data)
+    inline void write(std::ofstream& stream, const T& data)
     {
         stream.write(reinterpret_cast<const char*>(&data), sizeof(T));
     }
 
-    constexpr void write(std::ofstream& stream, const void* data, size_t size)
+    inline void write(std::ofstream& stream, const void* data, size_t size)
     {
         stream.write(reinterpret_cast<const char*>(data), size);
     }
 
-    constexpr void write(std::ofstream& stream, const char* data, size_t size)
+    inline void write(std::ofstream& stream, const char* data, size_t size)
     {
         stream.write(reinterpret_cast<const char*>(data), size);
     }
 
-    constexpr void write(std::ofstream& stream, const std::string& data, size_t size)
+    inline void write(std::ofstream& stream, const std::string& data, size_t size)
     {
         std::vector<char> copy(size);
         std::ranges::copy(data, copy.begin());
         stream.write(copy.data(), copy.size());
     }
 
-    constexpr uint32_t getChecksum(const std::vector<char>& data)
+    inline uint32_t getChecksum(const std::vector<char>& data)
     {
         boost::crc_32_type crc;
         crc.process_bytes(data.data(), data.size());

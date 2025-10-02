@@ -320,7 +320,7 @@ namespace dscstools::mdb1new::detail
         return {INVALID, INVALID, 0, ""};
     }
 
-    constexpr inline std::string buildMDB1Path(const std::filesystem::path& path)
+    inline std::string buildMDB1Path(const std::filesystem::path& path)
     {
         auto extension = path.extension().string().substr(1, 5);
         auto tmp       = path;
@@ -337,8 +337,8 @@ namespace dscstools::mdb1new::detail
         return std::string(name);
     }
 
-    constexpr inline std::vector<TreeNode> generateTree(const std::vector<std::filesystem::path> paths,
-                                                        std::filesystem::path source)
+    inline std::vector<TreeNode> generateTree(const std::vector<std::filesystem::path> paths,
+                                              std::filesystem::path source)
     {
         std::vector<TreeName> fileNames;
         std::ranges::transform(paths,
