@@ -82,7 +82,6 @@ namespace
     {
         switch (type)
         {
-            case EntryType::UNK0: return "unk0";
             case EntryType::UNK1: return "unk1";
             case EntryType::INT32: return "int32";
             case EntryType::INT16: return "int16";
@@ -102,7 +101,6 @@ namespace
     {
         switch (type)
         {
-            case EntryType::UNK0: return 0;
             case EntryType::UNK1: return 0;
             case EntryType::INT32: return 4;
             case EntryType::INT16: return 2;
@@ -122,7 +120,6 @@ namespace
     {
         switch (type)
         {
-            case EntryType::UNK0: return 0;
             case EntryType::UNK1: return 0;
             case EntryType::INT32: return 4;
             case EntryType::INT16: return 2;
@@ -163,7 +160,6 @@ namespace
                 return std::views::join_with(data, ' ') | std::ranges::to<std::string>();
             }
             case EntryType::EMPTY: [[fallthrough]];
-            case EntryType::UNK0: [[fallthrough]];
             case EntryType::UNK1: [[fallthrough]];
             default: return "";
         }
@@ -174,7 +170,6 @@ namespace
         switch (type)
         {
             default:
-            case EntryType::UNK0: [[fallthrough]];
             case EntryType::UNK1: [[fallthrough]];
             case EntryType::EMPTY: return std::nullopt;
 
@@ -260,7 +255,7 @@ namespace
             }
             case EntryType::INT_ARRAY:
             {
-                auto array                             = get<std::vector<int32_t>>(value);
+                const auto& array                      = get<std::vector<int32_t>>(value);
                 *reinterpret_cast<uint32_t*>(data)     = static_cast<int32_t>(array.size());
                 *reinterpret_cast<uint64_t*>(data + 8) = 0;
                 if (!array.empty()) return CHNKEntry(base_offset + 8, array);
@@ -269,7 +264,6 @@ namespace
 
             case EntryType::EMPTY: [[fallthrough]];
             case EntryType::BOOL: [[fallthrough]];
-            case EntryType::UNK0: [[fallthrough]];
             case EntryType::UNK1: [[fallthrough]];
             default: break;
         }
@@ -281,7 +275,6 @@ namespace
         switch (type)
         {
             default:
-            case EntryType::UNK0: [[fallthrough]];
             case EntryType::UNK1: [[fallthrough]];
             case EntryType::EMPTY: return std::nullopt;
 
