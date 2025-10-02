@@ -9,7 +9,7 @@
 void printUse()
 {
     // clang-format off
-    std::cout << "DSTSTools v2.0.0-alpha2 by SydMontague | https://github.com/SydMontague/DSCSTools/" << std::endl;
+    std::cout << "DSTSTools v2.0.0-alpha3 by SydMontague | https://github.com/SydMontague/DSCSTools/" << std::endl;
     std::cout << "Modes:" << std::endl;
     std::cout << "	--extract <sourceFile> <targetFolder>" << std::endl;
     std::cout << "		Extracts the given MDB1 into a folder." << std::endl;
@@ -35,7 +35,7 @@ void extractMBE(std::filesystem::path source, std::filesystem::path target)
         std::cout << result.error() << "\n";
     else
     {
-        auto result2 = dscstools::expa::exportCSV(result.value(), target);
+        auto result2 = dscstools::expa::exportCSV(result.value(), target / source.filename());
         if (!result2) std::cout << result.error() << "\n";
     }
 }
