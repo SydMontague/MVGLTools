@@ -18,9 +18,13 @@ void printUse()
     std::cout << "		Optional: --disable-compression" << std::endl;
     std::cout << "		Optional: --advanced-compression. Doesn't store duplicate data." << std::endl;
     std::cout << "	--mbeextract <source> <targetFolder>" << std::endl;
-    std::cout << "		Extracts a .mbe file or a directory of them into CSV. " << std::endl;
+    std::cout << "		Extracts a .mbe file of them into CSV. " << std::endl;
     std::cout << "	--mbepack <sourceFolder> <targetFile>" << std::endl;
     std::cout << "		Repacks an .mbe folder containing CSV files back into a .mbe file." << std::endl;
+    std::cout << "	--mbeextractdir <sourceFolder> <targetFolder>" << std::endl;
+    std::cout << "		Extracts a directory of .mbe files into CSV. " << std::endl;
+    std::cout << "	--mbepackdir <sourceFolder> <targetFolder>" << std::endl;
+    std::cout << "		Repacks a directory containing multiple .mbe folder containing CSV files back into a .mbe files." << std::endl;
     // clang-format on
 }
 
