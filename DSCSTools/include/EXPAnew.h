@@ -10,7 +10,32 @@
 namespace dscstools::expa
 {
     // forward declarations
-    struct CHNKEntry;
+    struct FinalFile;
+    struct Structure;
+
+    template<typename T>
+    concept EXPA = requires(std::ifstream& stream, std::filesystem::path filePath, std::string tableName) {
+        { T::ALIGN_STEP } -> std::convertible_to<size_t>;
+        { T::HAS_STRUCTURE_SECTION } -> std::convertible_to<bool>;
+        { T::getStructure(stream, filePath, tableName) } -> std::same_as<Structure>;
+    };
+
+    template<EXPA expa>
+    std::expected<void, std::string> writeEXPA(const FinalFile& file, std::filesystem::path path);
+
+    template<EXPA expa>
+    std::expected<FinalFile, std::string> readEXPA(std::filesystem::path path);
+
+    std::expected<void, std::string> exportCSV(const FinalFile& file, std::filesystem::path target);
+
+    std::expected<FinalFile, std::string> importCSV(std::filesystem::path source);
+} // namespace dscstools::expa
+
+// implementation
+namespace dscstools::expa
+{
+    constexpr auto EXPA_MAGIC = 0x41505845;
+    constexpr auto CHNK_MAGIC = 0x4B4E4843;
 
     using EntryValue =
         std::variant<bool, int8_t, int16_t, int32_t, float, std::string, std::vector<int32_t>, std::nullopt_t>;
@@ -33,16 +58,37 @@ namespace dscstools::expa
         INT_ARRAY = 100,
     };
 
-    struct StructureEntry
+    struct EXPAHeader
     {
-        std::string name;
-        EntryType type;
+        uint32_t magic{EXPA_MAGIC};
+        int32_t tableCount{0};
+    };
+
+    struct CHNKHeader
+    {
+        uint32_t magic{CHNK_MAGIC};
+        uint32_t numEntry{0};
+    };
+
+    struct CHNKEntry
+    {
+        uint32_t offset;
+        std::vector<char> value;
+
+        CHNKEntry(uint32_t offset, const std::string& data);
+        CHNKEntry(uint32_t offset, const std::vector<int32_t>& data);
     };
 
     struct EXPAEntry
     {
         std::vector<char> data;
         std::vector<CHNKEntry> chunk;
+    };
+
+    struct StructureEntry
+    {
+        std::string name;
+        EntryType type;
     };
 
     struct Structure
@@ -74,37 +120,6 @@ namespace dscstools::expa
         std::vector<FinalTable> tables;
     };
 
-    constexpr auto EXPA_MAGIC = 0x41505845;
-    constexpr auto CHNK_MAGIC = 0x4B4E4843;
-
-    struct CHNKEntry
-    {
-        uint32_t offset;
-        std::vector<char> value;
-
-        CHNKEntry(uint32_t offset, const std::string& data);
-        CHNKEntry(uint32_t offset, const std::vector<int32_t>& data);
-    };
-
-    struct EXPAHeader
-    {
-        uint32_t magic{EXPA_MAGIC};
-        int32_t tableCount{0};
-    };
-
-    struct CHNKHeader
-    {
-        uint32_t magic{CHNK_MAGIC};
-        uint32_t numEntry{0};
-    };
-
-    template<typename T>
-    concept EXPA = requires(std::ifstream& stream, std::filesystem::path filePath, std::string tableName) {
-        { T::ALIGN_STEP } -> std::convertible_to<size_t>;
-        { T::HAS_STRUCTURE_SECTION } -> std::convertible_to<bool>;
-        { T::getStructure(stream, filePath, tableName) } -> std::same_as<Structure>;
-    };
-
     struct EXPA32
     {
         static constexpr auto ALIGN_STEP            = 4;
@@ -122,24 +137,16 @@ namespace dscstools::expa
     };
 
     template<EXPA expa>
-    std::expected<void, std::string> writeEXPA(const FinalFile& file, std::filesystem::path path);
-
-    template<EXPA expa>
-    std::expected<FinalFile, std::string> readEXPA(std::filesystem::path path);
-} // namespace dscstools::expa
-
-// implementation
-namespace dscstools::expa
-{
-
-    std::expected<void, std::string> exportCSV(const FinalFile& file, std::filesystem::path target);
-
-    std::expected<FinalFile, std::string> importCSV(std::filesystem::path source);
-
-    template<EXPA expa>
     std::expected<void, std::string> writeEXPA(const FinalFile& file, std::filesystem::path path)
     {
+        if (std::filesystem::exists(path) && !std::filesystem::is_regular_file(path))
+            return std::unexpected("Target path already exists and is not a file.");
+        if (path.has_parent_path()) std::filesystem::create_directories(path.parent_path());
+
         std::ofstream stream(path, std::ios::binary);
+
+        if (!stream) return std::unexpected("Failed to write target file.");
+
         std::vector<CHNKEntry> chnk;
 
         write(stream, EXPA_MAGIC);
@@ -206,14 +213,19 @@ namespace dscstools::expa
             Structure structure;
         };
 
+        if (!std::filesystem::exists(path)) return std::unexpected("Source path does not exist.");
+        if (!std::filesystem::is_regular_file(path)) return std::unexpected("Source path does not lead to a file.");
+
         std::ifstream stream(path);
+
+        if (!stream) return std::unexpected("Failed to read source file.");
 
         std::vector<char> content(std::filesystem::file_size(path));
         stream.read(content.data(), content.size());
         stream.seekg(std::ios::beg);
 
         const auto header = read<EXPAHeader>(stream);
-        if (header.magic != EXPA_MAGIC) return std::unexpected("Given file lacks EXPA header.");
+        if (header.magic != EXPA_MAGIC) return std::unexpected("Source file lacks EXPA header.");
 
         std::vector<TableEntry> tables;
 
@@ -245,7 +257,7 @@ namespace dscstools::expa
         alignStream<expa::ALIGN_STEP>(stream);
 
         const auto chunkHeader = read<CHNKHeader>(stream);
-        if (chunkHeader.magic != CHNK_MAGIC) return std::unexpected("Given file lacks CHNK header.");
+        if (chunkHeader.magic != CHNK_MAGIC) return std::unexpected("Source file lacks CHNK header.");
 
         for (uint32_t i = 0; i < chunkHeader.numEntry; i++)
         {

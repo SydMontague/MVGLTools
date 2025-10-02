@@ -546,12 +546,18 @@ namespace dscstools::expa
 
     std::expected<void, std::string> exportCSV(const FinalFile& file, std::filesystem::path target)
     {
+        if (std::filesystem::exists(target) && !std::filesystem::is_directory(target))
+            return std::unexpected("Target path exists and is not a directory.");
+
         std::filesystem::create_directories(target);
+
         int32_t table_id = 0;
         for (const auto& table : file.tables)
         {
             auto path = target / std::format("{:03}_{}.csv", table_id++, table.name);
             std::ofstream stream(path);
+
+            if (!stream) return std::unexpected("Failed to write target file.");
 
             stream << table.structure.getCSVHeader() << "\n";
             std::ranges::for_each(table.entries, [&](auto val) { stream << table.structure.writeCSV(val) << "\n"; });
@@ -562,6 +568,9 @@ namespace dscstools::expa
 
     std::expected<FinalFile, std::string> importCSV(std::filesystem::path source)
     {
+        if (!std::filesystem::exists(source) || !std::filesystem::is_directory(source))
+            return std::unexpected("Source path doesn't exist or is not a directory.");
+
         std::filesystem::directory_iterator itr(source);
         std::vector<std::filesystem::path> files;
         for (auto val : itr)

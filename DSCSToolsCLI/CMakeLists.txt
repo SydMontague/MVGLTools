@@ -16,3 +16,13 @@ target_link_libraries(DSCSToolsCLI PRIVATE DSCSTools)
 install (TARGETS DSCSToolsCLI 
 			RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/target
 		)
+
+        
+add_executable (DSTSToolsCLI ${EXE_SOURCE_FILES})
+
+target_sources(DSTSToolsCLI 
+    PRIVATE
+    DSTSTools.cpp
+)
+
+target_link_libraries(DSTSToolsCLI PRIVATE DSCSTools)
