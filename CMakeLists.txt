@@ -11,7 +11,7 @@ set(CXX_SCAN_FOR_MODULES OFF)
 include(cmake/CPM.cmake)
 
 if (MSVC)
-	add_definitions("-D_CRT_SECURE_NO_WARNINGS -D_WIN32_WINNT=0x0601") # Windows 7
+	add_definitions("-D_CRT_SECURE_NO_WARNINGS -D_WIN32_WINNT=0x0A00") # Windows 10
 else()
 #	set(CMAKE_CXX_FLAGS -pthread)
 endif()
