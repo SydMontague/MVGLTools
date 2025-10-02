@@ -9,7 +9,7 @@
 void printUse()
 {
     // clang-format off
-    std::cout << "DSTSTools v2.0.0-alpha3 by SydMontague | https://github.com/SydMontague/DSCSTools/" << std::endl;
+    std::cout << "DSTSTools v2.0.0-alpha4 by SydMontague | https://github.com/SydMontague/DSCSTools/" << std::endl;
     std::cout << "Modes:" << std::endl;
     std::cout << "	--extract <sourceFile> <targetFolder>" << std::endl;
     std::cout << "		Extracts the given MDB1 into a folder." << std::endl;
@@ -30,6 +30,7 @@ void printUse()
 
 void extractMBE(std::filesystem::path source, std::filesystem::path target)
 {
+    std::cout << source << "\n";
     auto result = dscstools::expa::readEXPA<expa::EXPA64>(source);
     if (!result)
         std::cout << result.error() << "\n";
@@ -42,6 +43,7 @@ void extractMBE(std::filesystem::path source, std::filesystem::path target)
 
 void packMBE(std::filesystem::path source, std::filesystem::path target)
 {
+    std::cout << source << "\n";
     auto result = dscstools::expa::importCSV(source);
     if (!result)
         std::cout << result.error() << "\n";
@@ -62,7 +64,7 @@ void extractMBEDir(std::filesystem::path source, std::filesystem::path target)
     std::filesystem::directory_iterator itr(source);
 
     for (auto file : itr)
-        if (file.is_regular_file()) extractMBE(file, target / file.path().filename());
+        if (file.is_regular_file()) extractMBE(file, target);
 }
 
 void packMBEDir(std::filesystem::path source, std::filesystem::path target)

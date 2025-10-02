@@ -42,20 +42,17 @@ namespace dscstools::expa
 
     enum class EntryType : uint32_t
     {
-        UNK0    = 0,
-        UNK1    = 1,
-        INT32   = 2,
-        INT16   = 3,
-        INT8    = 4,
-        FLOAT   = 5,
-        STRING3 = 6, // ?
-        STRING  = 7, // ?
-        STRING2 = 8, // ?
-        BOOL    = 9,
-        EMPTY   = 10,
-
-        // int array, not present in DSTS?
-        INT_ARRAY = 100,
+        INT_ARRAY = 0,
+        UNK1      = 1,
+        INT32     = 2,
+        INT16     = 3,
+        INT8      = 4,
+        FLOAT     = 5,
+        STRING3   = 6, // ?
+        STRING    = 7, // ?
+        STRING2   = 8, // ?
+        BOOL      = 9,
+        EMPTY     = 10,
     };
 
     struct EXPAHeader
