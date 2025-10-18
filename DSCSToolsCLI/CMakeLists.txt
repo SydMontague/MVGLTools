@@ -25,4 +25,4 @@ target_sources(DSTSToolsCLI
     DSTSTools.cpp
 )
 
-target_link_libraries(DSTSToolsCLI PRIVATE DSCSTools)
+target_link_libraries(DSTSToolsCLI PRIVATE DSCSTools Boost::program_options)

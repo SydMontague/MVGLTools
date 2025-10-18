@@ -1,62 +1,153 @@
 
 #include "MDB1new.h"
 
-#include "Compressors.h"
-#include "MDB1.h"
 
-#include <cassert>
 #include <filesystem>
-#include <iostream>
 
 namespace
 {
 } // namespace
 
-namespace dscstools::mdb1new
+namespace dscstools::mdb1new::detail
 {
 
-    void test()
+    inline TreeNode findFirstBitMismatch(const uint16_t first,
+                                         const std::vector<TreeName>& nodeless,
+                                         const std::vector<TreeName>& withNode)
     {
-        auto dscsPath   = "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/DSDBP.decrypt.bin";
-        auto hltldaPath = "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/app_romA_0.dx11.mvgl";
-        auto dstsPath   = "/home/syd/Development/MyRepos/DSCSTools/build/DSCSToolsCLI/app_0.dx11.mvgl";
+        if (withNode.size() == 0) return {first, 0, 0, nodeless[0]};
 
-        ArchiveInfo<DSCS> info(dscsPath);
-        ArchiveInfo<HLTLDA> info2(hltldaPath);
-        ArchiveInfo<DSTS> info3(dstsPath);
+        for (uint16_t i = first; i < 1024; i++)
+        {
+            bool set   = false;
+            bool unset = false;
 
-        //info.extract("output/");
-        // info2.extract("output2/");
-        // info3.extract("DSTS/");
+            for (const auto& file : withNode)
+            {
+                if ((file.name[i >> 3] >> (i & 7)) & 1)
+                    set = true;
+                else
+                    unset = true;
 
-        auto start1 = std::chrono::steady_clock::now();
-        packArchive<DSCS>("output/", "DSDBP.new1", CompressMode::NORMAL);
-        auto end1 = std::chrono::steady_clock::now();
+                if (set && unset) return {i, 0, 0, nodeless[0]};
+            }
 
-        auto start2 = std::chrono::steady_clock::now();
-        packArchive<DSCS>("output/", "DSDBP.new2", CompressMode::ADVANCED);
-        auto end2 = std::chrono::steady_clock::now();
+            auto itr = std::find_if(nodeless.begin(),
+                                    nodeless.end(),
+                                    [set, unset, i](const auto& file)
+                                    {
+                                        bool val = (file.name[i >> 3] >> (i & 7)) & 1;
+                                        return val && unset || !val && set;
+                                    });
 
-        auto start3 = std::chrono::steady_clock::now();
-        dscstools::mdb1::packMDB1("output/", "DSDBP.old1", dscstools::mdb1::CompressMode::normal, false, std::cout);
-        auto end3 = std::chrono::steady_clock::now();
+            if (itr != nodeless.end()) return {i, 0, 0, *itr};
+        }
 
-        auto start4 = std::chrono::steady_clock::now();
-        dscstools::mdb1::packMDB1("output/", "DSDBP.old2", dscstools::mdb1::CompressMode::advanced, false, std::cout);
-        auto end4 = std::chrono::steady_clock::now();
-
-        std::cout << "1: " << end1 - start1 << "\n";
-        std::cout << "2: " << end2 - start2 << "\n";
-        std::cout << "3: " << end3 - start3 << "\n";
-        std::cout << "4: " << end4 - start4 << "\n";
-
-        ArchiveInfo<DSCS> new1("DSDBP.new1");
-        ArchiveInfo<DSCS> new2("DSDBP.new2");
-
-        new1.extract("DSDBPNew1/");
-        new2.extract("DSDBPNew2/");
+        return {INVALID, INVALID, 0, ""};
     }
 
+    inline std::string buildMDB1Path(const std::filesystem::path& path)
+    {
+        auto extension = path.extension().string().substr(1, 5);
+        auto tmp       = path;
+        auto fileName  = tmp.replace_extension("").string();
 
+        if (extension.length() == 3) extension = extension.append(" ");
+        std::replace(fileName.begin(), fileName.end(), '/', '\\');
 
-} // namespace dscstools::mdb1new
+        char name[0x81];
+        strncpy(name, extension.c_str(), 4);
+        strncpy(name + 4, fileName.c_str(), 0x7C);
+        name[0x80] = 0; // prevent overflow
+
+        return std::string(name);
+    }
+
+    std::vector<TreeNode> generateTree(const std::vector<std::filesystem::path> paths,
+                                              std::filesystem::path source)
+    {
+        std::vector<TreeName> fileNames;
+        std::ranges::transform(paths,
+                               std::back_inserter(fileNames),
+                               [&](const auto& path)
+                               {
+                                   auto relPath = std::filesystem::relative(path, source);
+                                   return TreeName{buildMDB1Path(relPath), path};
+                               });
+
+        struct QueueEntry
+        {
+            uint64_t parentNode;
+            uint64_t compareBit;
+            std::vector<TreeName> list;
+            std::vector<TreeName> nodeList;
+            bool isLeft;
+        };
+
+        std::vector<TreeNode> nodes  = {{INVALID, 0, 0, ""}};
+        std::deque<QueueEntry> queue = {{0, INVALID, fileNames, {}, false}};
+
+        while (!queue.empty())
+        {
+            QueueEntry entry = queue.front();
+            queue.pop_front();
+            TreeNode& parent = nodes[entry.parentNode];
+
+            std::vector<TreeName> nodeless;
+            std::vector<TreeName> withNode;
+
+            for (auto file : entry.list)
+            {
+                if (std::find(entry.nodeList.begin(), entry.nodeList.end(), file) == entry.nodeList.end())
+                    nodeless.push_back(file);
+                else
+                    withNode.push_back(file);
+            }
+
+            if (nodeless.size() == 0)
+            {
+                auto firstFile   = entry.list[0];
+                auto itr         = std::find_if(nodes.begin(),
+                                        nodes.end(),
+                                        [firstFile](const TreeNode& node) { return node.name == firstFile; });
+                ptrdiff_t offset = std::distance(nodes.begin(), itr);
+
+                if (entry.isLeft)
+                    parent.left = offset;
+                else
+                    parent.right = offset;
+
+                continue;
+            }
+
+            TreeNode child = findFirstBitMismatch(entry.compareBit + 1, nodeless, withNode);
+
+            if (entry.isLeft)
+                parent.left = nodes.size();
+            else
+                parent.right = nodes.size();
+
+            std::vector<TreeName> left;
+            std::vector<TreeName> right;
+
+            for (auto file : entry.list)
+            {
+                if ((file.name[child.compareBit >> 3] >> (child.compareBit & 7)) & 1)
+                    right.push_back(file);
+                else
+                    left.push_back(file);
+            }
+
+            std::vector<TreeName> newNodeList = entry.nodeList;
+            newNodeList.push_back(child.name);
+
+            if (left.size() > 0) queue.push_front({nodes.size(), child.compareBit, std::move(left), newNodeList, true});
+            if (right.size() > 0)
+                queue.push_front({nodes.size(), child.compareBit, std::move(right), newNodeList, false});
+            nodes.push_back(child);
+        }
+
+        return nodes;
+    }
+
+} // namespace dscstools::mdb1new::detail

@@ -2,6 +2,7 @@
 
 #include "boost/crc.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string_view>
@@ -9,13 +10,16 @@
 
 namespace dscstools
 {
-
-    constexpr std::string_view trim(std::string_view view)
+    inline bool file_equivalent(std::filesystem::path file1, std::filesystem::path file2)
     {
-        auto firstNull  = view.find_first_of('\0');
-        auto firstSpace = view.find_first_of(' ');
-
-        return view.substr(0, std::min(firstNull, firstSpace));
+        try
+        {
+            return std::filesystem::equivalent(file1, file2);
+        }
+        catch (...)
+        {
+            return false;
+        }
     }
 
     inline void log(std::string str)
@@ -61,6 +65,14 @@ namespace dscstools
         return crc.checksum();
     }
 
+    constexpr std::string_view trim(std::string_view view)
+    {
+        auto firstNull  = view.find_first_of('\0');
+        auto firstSpace = view.find_first_of(' ');
+
+        return view.substr(0, std::min(firstNull, firstSpace));
+    }
+
     template<int32_t step>
     constexpr int32_t ceilInteger(int32_t value)
     {
@@ -72,9 +84,8 @@ namespace dscstools
         if (step == 0) return value;
         return (value + step - 1) / step * step;
     }
-
     template<int32_t step>
-    constexpr void alignStream(std::ifstream& stream)
+    inline void alignStream(std::ifstream& stream)
     {
         stream.seekg(ceilInteger<step>(stream.tellg()));
     }
