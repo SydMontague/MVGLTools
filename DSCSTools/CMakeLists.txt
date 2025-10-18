@@ -3,8 +3,6 @@ add_library (DSCSTools)
 
 target_sources(DSCSTools
 	PRIVATE
-	MDB1.cpp
-	EXPA.cpp
 	SaveFile.cpp
 	AFS2.cpp
 	MDB1New.cpp
