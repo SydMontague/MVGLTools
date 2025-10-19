@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+#include <cstddef>
 #include <expected>
 #include <string>
 #include <vector>
@@ -29,16 +31,18 @@ namespace dscstools
     // See Compressor concept for details
     struct Doboz
     {
-        static std::expected<std::vector<char>, std::string> decompress(const std::vector<char>& input, size_t size);
-        static std::expected<std::vector<char>, std::string> compress(const std::vector<char>& input);
-        static bool isCompressed(const std::vector<char>& input);
+        static auto decompress(const std::vector<char>& input, size_t size)
+            -> std::expected<std::vector<char>, std::string>;
+        static auto compress(const std::vector<char>& input) -> std::expected<std::vector<char>, std::string>;
+        static auto isCompressed(const std::vector<char>& input) -> bool;
     };
 
     // See Compressor concept for details
     struct LZ4
     {
-        static std::expected<std::vector<char>, std::string> decompress(const std::vector<char>& input, size_t size);
-        static std::expected<std::vector<char>, std::string> compress(const std::vector<char>& input);
-        static bool isCompressed(const std::vector<char>& input);
+        static auto decompress(const std::vector<char>& input, size_t size)
+            -> std::expected<std::vector<char>, std::string>;
+        static auto compress(const std::vector<char>& input) -> std::expected<std::vector<char>, std::string>;
+        static auto isCompressed(const std::vector<char>& input) -> bool;
     };
 } // namespace dscstools

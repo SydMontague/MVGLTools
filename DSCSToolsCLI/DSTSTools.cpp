@@ -4,17 +4,25 @@
 #include "MDB1.h"
 #include "SaveFile.h"
 
-#include <boost/program_options.hpp>
+#include <boost/any.hpp>
 #include <boost/program_options/errors.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/positional_options.hpp>
+#include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
 
+#include <array>
 #include <cctype>
+#include <concepts>
 #include <exception>
 #include <expected>
 #include <filesystem>
 #include <iostream>
+#include <map>
 #include <ranges>
+#include <string>
+#include <vector>
 
 namespace
 {
@@ -53,19 +61,19 @@ namespace
     };
 
     template<typename T>
-    concept AFS2Module = requires(std::filesystem::path source, std::filesystem::path target) {
+    concept AFS2Module = requires(const std::filesystem::path& source, const std::filesystem::path& target) {
         { T::pack(source, target) } -> std::same_as<std::expected<void, std::string>>;
         { T::unpack(source, target) } -> std::same_as<std::expected<void, std::string>>;
     };
 
     template<typename T>
-    concept FileCryptModule = requires(std::filesystem::path source, std::filesystem::path target) {
+    concept FileCryptModule = requires(const std::filesystem::path& source, const std::filesystem::path& target) {
         { T::encrypt(source, target) } -> std::same_as<std::expected<void, std::string>>;
         { T::decrypt(source, target) } -> std::same_as<std::expected<void, std::string>>;
     };
 
     template<typename T>
-    concept SaveCryptModule = requires(std::filesystem::path source, std::filesystem::path target) {
+    concept SaveCryptModule = requires(const std::filesystem::path& source, const std::filesystem::path& target) {
         { T::encrypt(source, target) } -> std::same_as<std::expected<void, std::string>>;
         { T::decrypt(source, target) } -> std::same_as<std::expected<void, std::string>>;
     };
@@ -78,18 +86,20 @@ namespace
             typename T::CryptModule;
             typename T::SaveCryptModule;
             typename T::AFS2Module;
-        } && mdb1::ArchiveType<typename T::MDB1Module> && expa::EXPA<typename T::EXPAModule> &&
+        } && dscstools::mdb1::ArchiveType<typename T::MDB1Module> && dscstools::expa::EXPA<typename T::EXPAModule> &&
         FileCryptModule<typename T::CryptModule> && SaveCryptModule<typename T::SaveCryptModule> &&
         AFS2Module<typename T::AFS2Module>;
 
     struct DummySaveCryptor
     {
-        static std::expected<void, std::string> encrypt(std::filesystem::path source, std::filesystem::path target)
+        static auto encrypt([[maybe_unused]] const std::filesystem::path& source,
+                            [[maybe_unused]] const std::filesystem::path& target) -> std::expected<void, std::string>
         {
             return std::unexpected("Not supported");
         }
 
-        static std::expected<void, std::string> decrypt(std::filesystem::path source, std::filesystem::path target)
+        static auto decrypt([[maybe_unused]] const std::filesystem::path& source,
+                            [[maybe_unused]] const std::filesystem::path& target) -> std::expected<void, std::string>
         {
             return std::unexpected("Not supported");
         }
@@ -97,11 +107,12 @@ namespace
 
     struct DSCSSaveCryptor
     {
-        static std::expected<void, std::string> encrypt(std::filesystem::path source, std::filesystem::path target)
+        static auto encrypt(const std::filesystem::path& source, const std::filesystem::path& target)
+            -> std::expected<void, std::string>
         {
             try
             {
-                savefile::encryptSaveFile(source, target);
+                dscstools::savefile::encryptSaveFile(source, target);
                 return {};
             }
             catch (std::exception& ex)
@@ -110,11 +121,12 @@ namespace
             }
         }
 
-        static std::expected<void, std::string> decrypt(std::filesystem::path source, std::filesystem::path target)
+        static auto decrypt(const std::filesystem::path& source, const std::filesystem::path& target)
+            -> std::expected<void, std::string>
         {
             try
             {
-                savefile::decryptSaveFile(source, target);
+                dscstools::savefile::decryptSaveFile(source, target);
                 return {};
             }
             catch (std::exception& ex)
@@ -126,12 +138,14 @@ namespace
 
     struct DummyAFS2Packer
     {
-        static std::expected<void, std::string> unpack(std::filesystem::path source, std::filesystem::path target)
+        static auto unpack([[maybe_unused]] const std::filesystem::path& source,
+                           [[maybe_unused]] const std::filesystem::path& target) -> std::expected<void, std::string>
         {
             return std::unexpected("Not supported");
         }
 
-        static std::expected<void, std::string> pack(std::filesystem::path source, std::filesystem::path target)
+        static auto pack([[maybe_unused]] const std::filesystem::path& source,
+                         [[maybe_unused]] const std::filesystem::path& target) -> std::expected<void, std::string>
         {
             return std::unexpected("Not supported");
         }
@@ -139,11 +153,12 @@ namespace
 
     struct DSCSAFS2Packer
     {
-        static std::expected<void, std::string> unpack(std::filesystem::path source, std::filesystem::path target)
+        static auto unpack(const std::filesystem::path& source, const std::filesystem::path& target)
+            -> std::expected<void, std::string>
         {
             try
             {
-                afs2::extractAFS2(source, target);
+                dscstools::afs2::extractAFS2(source, target);
                 return {};
             }
             catch (std::exception& ex)
@@ -152,11 +167,12 @@ namespace
             }
         }
 
-        static std::expected<void, std::string> pack(std::filesystem::path source, std::filesystem::path target)
+        static auto pack(const std::filesystem::path& source, const std::filesystem::path& target)
+            -> std::expected<void, std::string>
         {
             try
             {
-                afs2::packAFS2(source, target);
+                dscstools::afs2::packAFS2(source, target);
                 return {};
             }
             catch (std::exception& ex)
@@ -168,12 +184,14 @@ namespace
 
     struct DummyFileCryptor
     {
-        static std::expected<void, std::string> encrypt(std::filesystem::path source, std::filesystem::path target)
+        static auto encrypt([[maybe_unused]] const std::filesystem::path& source,
+                            [[maybe_unused]] const std::filesystem::path& target) -> std::expected<void, std::string>
         {
             return std::unexpected("Not supported");
         }
 
-        static std::expected<void, std::string> decrypt(std::filesystem::path source, std::filesystem::path target)
+        static auto decrypt([[maybe_unused]] const std::filesystem::path& source,
+                            [[maybe_unused]] const std::filesystem::path& target) -> std::expected<void, std::string>
         {
             return std::unexpected("Not supported");
         }
@@ -181,23 +199,25 @@ namespace
 
     struct DSCSFileCryptor
     {
-        static std::expected<void, std::string> encrypt(std::filesystem::path source, std::filesystem::path target)
+        static auto encrypt(const std::filesystem::path& source, const std::filesystem::path& target)
+            -> std::expected<void, std::string>
         {
             if (!std::filesystem::is_regular_file(source)) return std::unexpected("Input path is not a file.");
             if (std::filesystem::exists(target) && !std::filesystem::is_regular_file(target))
                 return std::unexpected("Output path exists and is not a file.");
-            if (file_equivalent(source, target)) return std::unexpected("Input and output file must be different.");
+            if (dscstools::file_equivalent(source, target))
+                return std::unexpected("Input and output file must be different.");
 
-            mdb1::DSCS::InputStream input(source, std::ios::binary | std::ios::in);
-            mdb1::DSCS::OutputStream output(target, std::ios::binary | std::ios::out);
+            dscstools::mdb1::DSCS::InputStream input(source, std::ios::binary | std::ios::in);
+            dscstools::mdb1::DSCS::OutputStream output(target, std::ios::binary | std::ios::out);
 
             std::streamsize offset = 0;
-            std::array<char, 0x2000> inArr;
+            std::array<char, 0x2000> inArr{};
 
             while (!input.eof())
             {
                 input.read(inArr.data(), 0x2000);
-                std::streamsize count = input.gcount();
+                auto count = input.gcount();
                 output.write(inArr.data(), count);
                 offset += count;
             }
@@ -205,7 +225,8 @@ namespace
             return {};
         }
 
-        static std::expected<void, std::string> decrypt(std::filesystem::path source, std::filesystem::path target)
+        static auto decrypt(const std::filesystem::path& source, const std::filesystem::path& target)
+            -> std::expected<void, std::string>
         {
             return encrypt(source, target);
         }
@@ -250,25 +271,29 @@ namespace
     template<GameModules T>
     struct GameCLI
     {
-        static void packMVGL(std::filesystem::path source, std::filesystem::path target, mdb1::CompressMode compress)
+        static void packMVGL(const std::filesystem::path& source,
+                             const std::filesystem::path& target,
+                             dscstools::mdb1::CompressMode compress)
         {
             auto result = dscstools::mdb1::packArchive<typename T::MDB1Module>(source, target, compress);
             if (!result) std::cout << result.error() << "\n";
         }
-        static void unpackMVGL(std::filesystem::path source, std::filesystem::path target)
+        static void unpackMVGL(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             dscstools::mdb1::ArchiveInfo<typename T::MDB1Module> archive(source);
             auto result = archive.extract(target);
             if (!result) std::cout << result.error() << "\n";
         }
-        static void unpackMVGLFile(std::filesystem::path source, std::filesystem::path target, std::string file)
+        static void unpackMVGLFile(const std::filesystem::path& source,
+                                   const std::filesystem::path& target,
+                                   const std::string& file)
         {
             dscstools::mdb1::ArchiveInfo<typename T::MDB1Module> archive(source);
             auto result = archive.extractSingleFile(target, file);
             if (!result) std::cout << result.error() << "\n";
         }
 
-        static void unpackMBE(std::filesystem::path source, std::filesystem::path target)
+        static void unpackMBE(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             std::cout << source << "\n";
             auto result = dscstools::expa::readEXPA<typename T::EXPAModule>(source);
@@ -282,7 +307,7 @@ namespace
             if (!result2) std::cout << result2.error() << "\n";
         }
 
-        static void packMBE(std::filesystem::path source, std::filesystem::path target)
+        static void packMBE(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             std::cout << source << "\n";
             auto result = dscstools::expa::importCSV(source);
@@ -296,84 +321,85 @@ namespace
             if (!result2) std::cout << result2.error() << "\n";
         }
 
-        static void unpackMBEDir(std::filesystem::path source, std::filesystem::path target)
+        static void unpackMBEDir(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             if (!std::filesystem::exists(source) || !std::filesystem::is_directory(source)) return;
             if (std::filesystem::exists(target) && !std::filesystem::is_directory(target)) return;
 
             std::filesystem::create_directories(target);
 
-            std::filesystem::directory_iterator itr(source);
+            const std::filesystem::directory_iterator itr(source);
 
-            for (auto file : itr)
+            for (const auto& file : itr)
                 if (file.is_regular_file()) unpackMBE(file, target);
         }
 
-        static void packMBEDir(std::filesystem::path source, std::filesystem::path target)
+        static void packMBEDir(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             if (!std::filesystem::exists(source) || !std::filesystem::is_directory(source)) return;
             if (std::filesystem::exists(target) && !std::filesystem::is_directory(target)) return;
 
             std::filesystem::create_directories(target);
 
-            std::filesystem::directory_iterator itr(source);
+            const std::filesystem::directory_iterator itr(source);
 
-            for (auto file : itr)
+            for (const auto& file : itr)
                 if (file.is_directory()) packMBE(file.path(), target / file.path().filename());
         }
 
-        static void dumpMBEStructures(std::filesystem::path source, std::filesystem::path target)
+        static void dumpMBEStructures([[maybe_unused]] const std::filesystem::path& source,
+                                      [[maybe_unused]] const std::filesystem::path& target)
         {
             // TODO implement
             std::cout << "No implemented yet.\n";
         }
 
-        static void packAFS2(std::filesystem::path source, std::filesystem::path target)
+        static void packAFS2(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             auto result = T::AFS2Module::pack(source, target);
             if (!result) std::cout << result.error() << "\n";
         }
 
-        static void unpackAFS2(std::filesystem::path source, std::filesystem::path target)
+        static void unpackAFS2(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             auto result = T::AFS2Module::unpack(source, target);
             if (!result) std::cout << result.error() << "\n";
         }
 
-        static void encryptSave(std::filesystem::path source, std::filesystem::path target)
+        static void encryptSave(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             auto result = T::SaveCryptModule::encrypt(source, target);
             if (!result) std::cout << result.error() << "\n";
         }
 
-        static void decryptSave(std::filesystem::path source, std::filesystem::path target)
+        static void decryptSave(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             auto result = T::SaveCryptModule::decrypt(source, target);
             if (!result) std::cout << result.error() << "\n";
         }
 
-        static void encryptFile(std::filesystem::path source, std::filesystem::path target)
+        static void encryptFile(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             auto result = T::CryptModule::encrypt(source, target);
             if (!result) std::cout << result.error() << "\n";
         }
 
-        static void decryptFile(std::filesystem::path source, std::filesystem::path target)
+        static void decryptFile(const std::filesystem::path& source, const std::filesystem::path& target)
         {
             auto result = T::CryptModule::decrypt(source, target);
             if (!result) std::cout << result.error() << "\n";
         }
 
-        static void doAction(Mode mode, const boost::program_options::variables_map vm)
+        static void doAction(Mode mode, const boost::program_options::variables_map& vm)
         {
-            std::filesystem::path source = vm["input"].as<std::string>();
-            std::filesystem::path target = vm["output"].as<std::string>();
+            const std::filesystem::path source = vm["input"].as<std::string>();
+            const std::filesystem::path target = vm["output"].as<std::string>();
 
             switch (mode)
             {
                 case Mode::PACK_MVGL:
                 {
-                    mdb1::CompressMode compress = vm["compress"].as<mdb1::CompressMode>();
+                    auto compress = vm["compress"].as<dscstools::mdb1::CompressMode>();
                     packMVGL(source, target, compress);
                     break;
                 }
@@ -402,7 +428,7 @@ namespace
         }
     };
 
-    std::map<std::string, Mode> getModeMap()
+    auto getModeMap() -> std::map<std::string, Mode>
     {
         std::map<std::string, Mode> map;
         map["pack"]      = Mode::PACK_MVGL;
@@ -462,7 +488,7 @@ namespace
         return map;
     }
 
-    std::map<std::string, GameMode> getGameMap()
+    auto getGameMap() -> std::map<std::string, GameMode>
     {
         std::map<std::string, GameMode> map;
         map["dscs"]         = GameMode::DSCS;
@@ -483,17 +509,17 @@ namespace
         return map;
     }
 
-    std::map<std::string, mdb1::CompressMode> getCompressionMap()
+    auto getCompressionMap() -> std::map<std::string, dscstools::mdb1::CompressMode>
     {
-        std::map<std::string, mdb1::CompressMode> map;
-        map["normal"]   = mdb1::CompressMode::NORMAL;
-        map["none"]     = mdb1::CompressMode::NONE;
-        map["advanced"] = mdb1::CompressMode::ADVANCED;
+        std::map<std::string, dscstools::mdb1::CompressMode> map;
+        map["normal"]   = dscstools::mdb1::CompressMode::NORMAL;
+        map["none"]     = dscstools::mdb1::CompressMode::NONE;
+        map["advanced"] = dscstools::mdb1::CompressMode::ADVANCED;
         return map;
     }
 
     template<typename T>
-    void validate_helper(boost::any& value, const std::vector<std::string>& values, const std::map<std::string, T> map)
+    void validate_helper(boost::any& value, const std::vector<std::string>& values, const std::map<std::string, T>& map)
     {
         boost::program_options::validators::check_first_occurrence(value);
         const std::string& string = boost::program_options::validators::get_single_string(values);
@@ -508,15 +534,15 @@ namespace
                 boost::program_options::validation_error::invalid_option_value);
     }
 
-    void validate(boost::any& value, const std::vector<std::string>& values, Mode* target_type, int)
+    void validate(boost::any& value, const std::vector<std::string>& values, Mode* /*unused*/, int /*unused*/)
     {
-        static std::map<std::string, Mode> map = getModeMap();
+        static const std::map<std::string, Mode> map = getModeMap();
         validate_helper(value, values, map);
     }
 
-    void validate(boost::any& value, const std::vector<std::string>& values, GameMode* target_type, int)
+    void validate(boost::any& value, const std::vector<std::string>& values, GameMode* /*unused*/, int /*unused*/)
     {
-        static std::map<std::string, GameMode> map = getGameMap();
+        static const std::map<std::string, GameMode> map = getGameMap();
         validate_helper(value, values, map);
     }
 
@@ -524,14 +550,15 @@ namespace
 
 namespace dscstools::mdb1
 {
-    void validate(boost::any& value, const std::vector<std::string>& values, CompressMode* target_type, int)
+    // NOLINTNEXTLINE(misc-use-internal-linkage)
+    void validate(boost::any& value, const std::vector<std::string>& values, CompressMode* /*unused*/, int /*unused*/)
     {
-        static std::map<std::string, CompressMode> map = getCompressionMap();
+        static const std::map<std::string, CompressMode> map = getCompressionMap();
         validate_helper(value, values, map);
     }
 } // namespace dscstools::mdb1
 
-int main(int argc, char** argv)
+auto main(int argc, char** argv) -> int
 {
     namespace po = boost::program_options;
     po::variables_map vm;
@@ -571,11 +598,12 @@ int main(int argc, char** argv)
         "MVGL Pack Options\n  Input: Root folder to pack\n  Output: Path of the packed file",
         120);
     auto pack_options = pack_desc.add_options();
-    pack_options("compress",
-                 po::value<mdb1::CompressMode>()->default_value(mdb1::CompressMode::NORMAL, "normal"),
-                 "normal   -> use regular compression, as in vanilla files\n"
-                 "none     -> use no compression\n"
-                 "advanced -> improve compression by deduplicating, slower");
+    pack_options(
+        "compress",
+        po::value<dscstools::mdb1::CompressMode>()->default_value(dscstools::mdb1::CompressMode::NORMAL, "normal"),
+        "normal   -> use regular compression, as in vanilla files\n"
+        "none     -> use no compression\n"
+        "advanced -> improve compression by deduplicating, slower");
 
     po::options_description unpack_desc("MVGL Unpack Options", 120);
     auto unpack_options = unpack_desc.add_options();
@@ -590,7 +618,7 @@ int main(int argc, char** argv)
         po::store(po::command_line_parser(argc, argv).options(desc).positional(pos).run(), vm);
         po::notify(vm);
 
-        if (vm.count("help")) std::cout << desc;
+        if (vm.contains("help")) std::cout << desc;
 
         auto game = vm["game"].as<GameMode>();
         auto mode = vm["mode"].as<Mode>();
@@ -606,10 +634,10 @@ int main(int argc, char** argv)
     }
     catch (std::exception& ex)
     {
-        if (vm.count("help"))
+        if (vm.contains("help"))
             std::cout << desc;
         else
-            std::cout << ex.what() << std::endl;
+            std::cout << ex.what() << '\n';
     }
 
     return 0;

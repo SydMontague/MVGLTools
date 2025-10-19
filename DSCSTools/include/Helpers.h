@@ -2,15 +2,19 @@
 
 #include <boost/crc.hpp>
 
+#include <algorithm>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <ios>
 #include <iostream>
+#include <string>
 #include <string_view>
 #include <vector>
 
 namespace dscstools
 {
-    inline bool file_equivalent(std::filesystem::path file1, std::filesystem::path file2)
+    inline auto file_equivalent(const std::filesystem::path& file1, const std::filesystem::path& file2) -> bool
     {
         try
         {
@@ -22,13 +26,13 @@ namespace dscstools
         }
     }
 
-    inline void log(std::string str)
+    inline void log(const std::string& str)
     {
-        std::cout << str << std::endl;
+        std::cout << str << '\n';
     }
 
     template<typename T>
-    inline T read(std::ifstream& stream)
+    inline auto read(std::ifstream& stream) -> T
     {
         T data;
         stream.read(reinterpret_cast<char*>(&data), sizeof(T));
@@ -41,31 +45,31 @@ namespace dscstools
         stream.write(reinterpret_cast<const char*>(&data), sizeof(T));
     }
 
-    inline void write(std::ofstream& stream, const void* data, size_t size)
+    template<>
+    inline void write(std::ofstream& stream, const std::vector<char>& data)
+    {
+        stream.write(data.data(), static_cast<std::streamsize>(data.size()));
+    }
+
+    inline void write(std::ofstream& stream, const void* data, std::streamsize size)
     {
         stream.write(reinterpret_cast<const char*>(data), size);
     }
-
-    inline void write(std::ofstream& stream, const char* data, size_t size)
-    {
-        stream.write(reinterpret_cast<const char*>(data), size);
-    }
-
-    inline void write(std::ofstream& stream, const std::string& data, size_t size)
+    inline void write(std::ofstream& stream, const std::string& data, std::streamsize size)
     {
         std::vector<char> copy(size);
         std::ranges::copy(data, copy.begin());
-        stream.write(copy.data(), copy.size());
+        stream.write(copy.data(), static_cast<std::streamsize>(copy.size()));
     }
 
-    inline uint32_t getChecksum(const std::vector<char>& data)
+    inline auto getChecksum(const std::vector<char>& data) -> uint32_t
     {
         boost::crc_32_type crc;
         crc.process_bytes(data.data(), data.size());
         return crc.checksum();
     }
 
-    constexpr std::string_view trim(std::string_view view)
+    constexpr auto trim(std::string_view view) -> std::string_view
     {
         auto firstNull  = view.find_first_of('\0');
         auto firstSpace = view.find_first_of(' ');
@@ -74,12 +78,12 @@ namespace dscstools
     }
 
     template<int32_t step>
-    constexpr int32_t ceilInteger(int32_t value)
+    constexpr auto ceilInteger(int32_t value) -> int32_t
     {
         return (value + step - 1) / step * step;
     }
 
-    constexpr int32_t ceilInteger(int32_t value, int32_t step)
+    constexpr auto ceilInteger(int32_t value, int32_t step) -> int32_t
     {
         if (step == 0) return value;
         return (value + step - 1) / step * step;
@@ -90,19 +94,17 @@ namespace dscstools
         stream.seekg(ceilInteger<step>(stream.tellg()));
     }
 
-    constexpr std::string wrapRegex(const std::string& in)
+    constexpr auto wrapRegex(const std::string& in) -> std::string
     {
         return "^" + in + "$";
     }
 
 } // namespace dscstools
 
-namespace
+namespace dscstools::test
 {
-    using namespace dscstools;
-
     static_assert(ceilInteger<8>(76) == 80);
     static_assert(ceilInteger<8>(8) == 8);
     static_assert(ceilInteger(76, 8) == 80);
     static_assert(ceilInteger(8, 8) == 8);
-} // namespace
+} // namespace dscstools::test

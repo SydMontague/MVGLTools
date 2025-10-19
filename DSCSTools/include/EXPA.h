@@ -1,11 +1,19 @@
 #pragma once
 #include "Helpers.h"
 
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
 #include <expected>
 #include <filesystem>
+#include <format>
 #include <fstream>
+#include <ios>
+#include <optional>
 #include <ranges>
+#include <string>
 #include <variant>
+#include <vector>
 
 namespace dscstools::expa
 {
@@ -73,47 +81,47 @@ namespace dscstools::expa
         std::vector<StructureEntry> structure;
 
     public:
-        Structure(std::vector<StructureEntry> structure);
+        explicit Structure(std::vector<StructureEntry> structure);
 
         /**
          * Get the structure entries.
          */
-        const std::vector<StructureEntry> getStructure() const;
+        [[nodiscard]] auto getStructure() const -> std::vector<StructureEntry>;
 
         /**
          * Returns the number of entries the structure has.
          */
-        size_t getEntryCount() const;
+        [[nodiscard]] auto getEntryCount() const -> size_t;
 
         /**
          * Convert a vector of entry values, representing a row of this structure, into an EXPAEntry.
          */
-        EXPAEntry writeEXPA(const std::vector<EntryValue>& entries) const;
+        [[nodiscard]] auto writeEXPA(const std::vector<EntryValue>& entries) const -> EXPAEntry;
 
         /**
          * Read a row of entry values from a raw buffer. The caller must make sure there is enough data to read.
          */
-        std::vector<EntryValue> readEXPA(const char* data) const;
+        [[nodiscard]] auto readEXPA(const char* data) const -> std::vector<EntryValue>;
 
         /**
          * Gets the size of an entry of this structure when written in the EXPA format.
          */
-        uint32_t getEXPASize() const;
+        [[nodiscard]] auto getEXPASize() const -> uint32_t;
 
         /**
          * Get the CSV header row of this structure.
          */
-        std::string getCSVHeader() const;
+        [[nodiscard]] auto getCSVHeader() const -> std::string;
 
         /**
          * Convert a vector of entry values, representing a row of this structure, into a CSV compatible string.
          */
-        std::string writeCSV(const std::vector<EntryValue>& entries) const;
+        [[nodiscard]] auto writeCSV(const std::vector<EntryValue>& entries) const -> std::string;
 
         /**
          * Convert a vector of strings into a vector of entry values, representing a row of this structure.
          */
-        std::vector<EntryValue> readCSV(const std::vector<std::string>& data) const;
+        [[nodiscard]] auto readCSV(const std::vector<std::string>& data) const -> std::vector<EntryValue>;
     };
 
     /**
@@ -138,7 +146,7 @@ namespace dscstools::expa
      * Represents an EXPA implementation, detailing all the static functions and data needed to use this module.
      */
     template<typename T>
-    concept EXPA = requires(std::ifstream& stream, std::filesystem::path filePath, std::string tableName) {
+    concept EXPA = requires(std::ifstream& stream, const std::filesystem::path& path, const std::string& tableName) {
         /**
          * The alignment size of the EXPA.
          */
@@ -151,7 +159,7 @@ namespace dscstools::expa
          * Read the structure from the stream and lookup the structure file and return it or an empty structure if
          * nothing was found.
          */
-        { T::getStructure(stream, filePath, tableName) } -> std::same_as<Structure>;
+        { T::getStructure(stream, path, tableName) } -> std::same_as<Structure>;
     };
 
     // See EXPA concept for details
@@ -160,7 +168,9 @@ namespace dscstools::expa
         static constexpr auto ALIGN_STEP            = 4;
         static constexpr auto HAS_STRUCTURE_SECTION = false;
 
-        static Structure getStructure(std::ifstream& stream, std::filesystem::path filePath, std::string tableName);
+        static auto getStructure(std::ifstream& stream,
+                                 const std::filesystem::path& filePath,
+                                 const std::string& tableName) -> Structure;
     };
 
     // See EXPA concept for details
@@ -169,7 +179,9 @@ namespace dscstools::expa
         static constexpr auto ALIGN_STEP            = 8;
         static constexpr auto HAS_STRUCTURE_SECTION = true;
 
-        static Structure getStructure(std::ifstream& stream, std::filesystem::path filePath, std::string tableName);
+        static auto getStructure(std::ifstream& stream,
+                                 const std::filesystem::path& filePath,
+                                 const std::string& tableName) -> Structure;
     };
 
     /**
@@ -180,7 +192,7 @@ namespace dscstools::expa
      * @return void if successful, an error string otherwise
      */
     template<EXPA expa>
-    std::expected<void, std::string> writeEXPA(const TableFile& file, std::filesystem::path path);
+    auto writeEXPA(const TableFile& file, const std::filesystem::path& path) -> std::expected<void, std::string>;
 
     /**
      * Reads an EXPA file into a table file.
@@ -189,7 +201,7 @@ namespace dscstools::expa
      * @return the table file if successful, an error string otherwise
      */
     template<EXPA expa>
-    std::expected<TableFile, std::string> readEXPA(std::filesystem::path path);
+    auto readEXPA(const std::filesystem::path& path) -> std::expected<TableFile, std::string>;
 
     /**
      * Write a table file as CSV into the given path
@@ -198,7 +210,7 @@ namespace dscstools::expa
      * @param path the path to write to
      * @return void if successful, an error string otherwise
      */
-    std::expected<void, std::string> exportCSV(const TableFile& file, std::filesystem::path target);
+    auto exportCSV(const TableFile& file, const std::filesystem::path& target) -> std::expected<void, std::string>;
 
     /**
      * Reads an CSV folder into a table file.
@@ -206,7 +218,7 @@ namespace dscstools::expa
      * @param path the path to read from
      * @return the table file if successful, an error string otherwise
      */
-    std::expected<TableFile, std::string> importCSV(std::filesystem::path source);
+    auto importCSV(const std::filesystem::path& source) -> std::expected<TableFile, std::string>;
 } // namespace dscstools::expa
 
 namespace dscstools::expa::detail
@@ -233,7 +245,7 @@ namespace dscstools::expa
     using namespace detail;
 
     template<EXPA expa>
-    std::expected<void, std::string> writeEXPA(const TableFile& file, std::filesystem::path path)
+    auto writeEXPA(const TableFile& file, const std::filesystem::path& path) -> std::expected<void, std::string>
     {
         if (std::filesystem::exists(path) && !std::filesystem::is_regular_file(path))
             return std::unexpected("Target path already exists and is not a file.");
@@ -273,7 +285,7 @@ namespace dscstools::expa
             {
                 auto start  = stream.tellp();
                 auto result = structure.writeEXPA(entry);
-                stream.write(result.data.data(), result.data.size());
+                write(stream, result.data);
 
                 auto lambda = [=](CHNKEntry& val)
                 {
@@ -291,21 +303,21 @@ namespace dscstools::expa
         {
             write(stream, entry.offset);
             write(stream, static_cast<uint32_t>(entry.value.size()));
-            write(stream, entry.value.data(), entry.value.size());
+            write(stream, entry.value);
         }
 
         return {};
     }
 
     template<EXPA expa>
-    std::expected<TableFile, std::string> readEXPA(std::filesystem::path path)
+    auto readEXPA(const std::filesystem::path& path) -> std::expected<TableFile, std::string>
     {
         struct TableEntry
         {
             std::string name;
-            size_t dataOffset;
-            uint32_t entryCount;
-            uint32_t entrySize;
+            size_t dataOffset{};
+            uint32_t entryCount{};
+            uint32_t entrySize{};
             Structure structure;
         };
 
@@ -357,9 +369,9 @@ namespace dscstools::expa
 
         for (uint32_t i = 0; i < chunkHeader.numEntry; i++)
         {
-            uint32_t offset = read<uint32_t>(stream);
-            uint32_t size   = read<uint32_t>(stream);
-            uint64_t ptr    = reinterpret_cast<uint64_t>(content.data() + stream.tellg());
+            auto offset = read<uint32_t>(stream);
+            auto size   = read<uint32_t>(stream);
+            auto ptr    = reinterpret_cast<uint64_t>(content.data() + stream.tellg());
             *reinterpret_cast<uint64_t*>(content.data() + offset) = ptr;
             stream.seekg(size, std::ios::cur);
         }

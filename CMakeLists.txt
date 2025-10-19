@@ -19,9 +19,9 @@ option(BUILD_CLI_APP "Build CLI Application" ON)
 
 # --- Libraries ---
 # doboz
-add_subdirectory("libs/doboz")
+add_subdirectory("libs/doboz" SYSTEM)
 # lz4
-add_subdirectory("libs/lz4")
+add_subdirectory("libs/lz4" SYSTEM)
 # csv-parser
 add_subdirectory("libs/csv-parser")
 
@@ -35,6 +35,7 @@ CPMAddPackage(
   VERSION 1.89.0
   GITHUB_REPOSITORY "boostorg/boost"
   GIT_TAG "boost-1.89.0"
+  SYSTEM YES
 )
 
 # Include sub-projects.
