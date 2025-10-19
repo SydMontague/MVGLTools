@@ -77,21 +77,16 @@ namespace dscstools
         return view.substr(0, std::min(firstNull, firstSpace));
     }
 
-    template<int32_t step>
-    constexpr auto ceilInteger(int32_t value) -> int32_t
-    {
-        return (value + step - 1) / step * step;
-    }
-
-    constexpr auto ceilInteger(int32_t value, int32_t step) -> int32_t
+    constexpr auto ceilInteger(int64_t value, int64_t step) -> int64_t
     {
         if (step == 0) return value;
         return (value + step - 1) / step * step;
     }
-    template<int32_t step>
+    
+    template<int64_t step>
     inline void alignStream(std::ifstream& stream)
     {
-        stream.seekg(ceilInteger<step>(stream.tellg()));
+        stream.seekg(ceilInteger(stream.tellg(), step));
     }
 
     constexpr auto wrapRegex(const std::string& in) -> std::string
@@ -103,8 +98,6 @@ namespace dscstools
 
 namespace dscstools::test
 {
-    static_assert(ceilInteger<8>(76) == 80);
-    static_assert(ceilInteger<8>(8) == 8);
     static_assert(ceilInteger(76, 8) == 80);
     static_assert(ceilInteger(8, 8) == 8);
 } // namespace dscstools::test

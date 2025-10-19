@@ -46,8 +46,8 @@ namespace dscstools::expa
      */
     struct CHNKEntry
     {
-        uint32_t offset;
-        std::vector<char> value;
+        uint32_t offset;         // NOLINT(misc-non-private-member-variables-in-classes)
+        std::vector<char> value; // NOLINT(misc-non-private-member-variables-in-classes)
 
         CHNKEntry(uint32_t offset, const std::string& data);
         CHNKEntry(uint32_t offset, const std::vector<int32_t>& data);
@@ -263,9 +263,9 @@ namespace dscstools::expa
         for (const auto& table : file.tables)
         {
             const auto& structure    = table.structure;
-            const auto nameSize      = ceilInteger<4>(table.name.size() + 1);
+            const auto nameSize      = ceilInteger(static_cast<int64_t>(table.name.size() + 1), 4);
             auto structureSize       = structure.getEXPASize();
-            auto actualStructureSize = ceilInteger<8>(structureSize);
+            auto actualStructureSize = ceilInteger(structureSize, 8);
             write(stream, nameSize);
             write(stream, table.name, nameSize);
 
@@ -279,7 +279,7 @@ namespace dscstools::expa
             write(stream, structureSize);
             write(stream, static_cast<uint32_t>(table.entries.size()));
 
-            stream.seekp(ceilInteger<8>(stream.tellp()), std::ios::beg);
+            stream.seekp(ceilInteger(stream.tellp(), 8), std::ios::beg);
 
             for (const auto& entry : table.entries)
             {
@@ -329,7 +329,7 @@ namespace dscstools::expa
         if (!stream) return std::unexpected("Failed to read source file.");
 
         std::vector<char> content(std::filesystem::file_size(path));
-        stream.read(content.data(), content.size());
+        stream.read(content.data(), static_cast<std::streamsize>(content.size()));
         stream.seekg(std::ios::beg);
 
         const auto header = read<EXPAHeader>(stream);
@@ -343,7 +343,7 @@ namespace dscstools::expa
 
             auto nameLength = read<uint32_t>(stream);
             std::vector<char> nameData(nameLength);
-            stream.read(nameData.data(), nameData.size());
+            stream.read(nameData.data(), static_cast<std::streamsize>(nameData.size()));
             std::string name(nameData.data());
 
             Structure structure = expa::getStructure(stream, path, name);
@@ -352,10 +352,10 @@ namespace dscstools::expa
 
             alignStream<8>(stream);
             tables.emplace_back(name, stream.tellg(), entryCount, entrySize, structure);
-            stream.seekg(entryCount * ceilInteger<8>(entrySize), std::ios::cur);
+            stream.seekg(entryCount * ceilInteger(entrySize, 8), std::ios::cur);
 
             auto structureSize = structure.getEXPASize();
-            if (structureSize != ceilInteger<8>(entrySize))
+            if (structureSize != ceilInteger(entrySize, 8))
             {
                 return std::unexpected(
                     std::format("Structure size {} doesn't match entry size {}.", structureSize, entrySize));
@@ -379,7 +379,7 @@ namespace dscstools::expa
         std::vector<Table> finalTable;
         for (const auto& table : tables)
         {
-            const auto increase = ceilInteger<8>(table.entrySize);
+            const auto increase = ceilInteger(table.entrySize, 8);
             auto offset         = table.dataOffset;
             std::vector<std::vector<EntryValue>> values;
 

@@ -355,7 +355,7 @@ namespace dscstools::expa
 
     auto Structure::writeEXPA(const std::vector<EntryValue>& entries) const -> EXPAEntry
     {
-        auto offset     = 0;
+        auto offset     = 0u;
         auto bitCounter = 0;
         std::bitset<32> currentBool;
         std::vector<CHNKEntry> chunkEntries;
@@ -387,11 +387,7 @@ namespace dscstools::expa
                 offset += getSize(type);
         }
 
-        if (bitCounter > 0)
-        {
-            *reinterpret_cast<uint32_t*>(new_data.data() + offset) = currentBool.to_ulong();
-            offset += sizeof(uint32_t);
-        }
+        if (bitCounter > 0) *reinterpret_cast<uint32_t*>(new_data.data() + offset) = currentBool.to_ulong();
 
         return {.data = new_data, .chunk = chunkEntries};
     }
@@ -401,7 +397,7 @@ namespace dscstools::expa
         if (structure.empty()) return {};
 
         std::vector<EntryValue> values;
-        auto offset     = 0;
+        auto offset     = 0u;
         auto bitCounter = 0u;
 
         for (const auto& val : structure)
@@ -456,8 +452,8 @@ namespace dscstools::expa
     {
         if (structure.empty()) return 0;
 
-        auto currentSize = 0;
-        auto bitCounter  = 0;
+        auto currentSize = 0u;
+        auto bitCounter  = 0u;
 
         for (const auto& val : structure)
         {
@@ -482,7 +478,7 @@ namespace dscstools::expa
     CHNKEntry::CHNKEntry(uint32_t offset, const std::string& data)
         : offset(offset)
     {
-        value = std::vector<char>(ceilInteger<4>(data.size() + 2));
+        value = std::vector<char>(ceilInteger(static_cast<int64_t>(data.size() + 2), 4));
         std::ranges::copy(data, value.begin());
     }
 
