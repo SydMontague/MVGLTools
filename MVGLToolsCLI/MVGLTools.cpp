@@ -105,6 +105,38 @@ namespace
         }
     };
 
+    struct AESSaveCryptor
+    {
+        // keys taken from: https://github.com/SydMontague/DSCSTools/issues/26
+        static auto encrypt([[maybe_unused]] const std::filesystem::path& source,
+                            [[maybe_unused]] const std::filesystem::path& target) -> std::expected<void, std::string>
+        {
+            return std::unexpected(
+                "This game uses AES-128-ecb, which is not implemented by this tool. Please use openssl for this "
+                "instead.\n"
+                "Example command for encryption:\n\n"
+                "openssl enc -e -aes-128-ecb -K <key> -in decrypted_save.bin -out 0001.bin.new -nopad\n\n"
+                "Known Keys:\n"
+                "  DSTS SaveFiles:   33393632373736373534353535383833\n"
+                "  DSTS ng_word.mbe: 30343532343734363235393931383338\n"
+                "  THL SaveFile:     bb3d99be083b97c62b14f8736eb30e39\n");
+        }
+
+        static auto decrypt([[maybe_unused]] const std::filesystem::path& source,
+                            [[maybe_unused]] const std::filesystem::path& target) -> std::expected<void, std::string>
+        {
+            return std::unexpected(
+                "This game uses AES-128-ecb, which is not implemented by this tool. Please use openssl for this "
+                "instead.\n"
+                "Example command for decryption:\n\n"
+                "openssl enc -d -aes-128-ecb -K <key> -in decrypted_save.bin -out 0001.bin.new -nopad\n\n"
+                "Known Keys:\n"
+                "  DSTS SaveFiles:   33393632373736373534353535383833\n"
+                "  DSTS ng_word.mbe: 30343532343734363235393931383338\n"
+                "  THL SaveFile:     bb3d99be083b97c62b14f8736eb30e39\n");
+        }
+    };
+
     struct DSCSSaveCryptor
     {
         static auto encrypt(const std::filesystem::path& source, const std::filesystem::path& target)
@@ -237,7 +269,7 @@ namespace
         using MDB1Module      = mvgltools::mdb1::DSTS;
         using EXPAModule      = mvgltools::expa::DSTS;
         using CryptModule     = DummyFileCryptor;
-        using SaveCryptModule = DummySaveCryptor;
+        using SaveCryptModule = AESSaveCryptor;
         using AFS2Module      = DummyAFS2Packer;
     };
 
@@ -246,7 +278,7 @@ namespace
         using MDB1Module      = mvgltools::mdb1::THL;
         using EXPAModule      = mvgltools::expa::THL;
         using CryptModule     = DummyFileCryptor;
-        using SaveCryptModule = DummySaveCryptor;
+        using SaveCryptModule = AESSaveCryptor;
         using AFS2Module      = DummyAFS2Packer;
     };
 
@@ -476,14 +508,18 @@ namespace
         map["crypt"]        = Mode::ENCRYPT_FILE;
         map["encrypt"]      = Mode::ENCRYPT_FILE;
         map["encrypt-file"] = Mode::ENCRYPT_FILE;
+        map["file-encrypt"] = Mode::ENCRYPT_FILE;
 
         map["decrypt"]      = Mode::DECRYPT_FILE;
         map["decrypt-file"] = Mode::DECRYPT_FILE;
+        map["file-decrypt"] = Mode::DECRYPT_FILE;
 
         map["decryptsave"]  = Mode::DECRYPT_SAVE;
         map["decrypt-save"] = Mode::DECRYPT_SAVE;
+        map["save-decrypt"] = Mode::DECRYPT_SAVE;
         map["encryptsave"]  = Mode::ENCRYPT_SAVE;
         map["encrypt-save"] = Mode::ENCRYPT_SAVE;
+        map["save-encrypt"] = Mode::ENCRYPT_SAVE;
 
         return map;
     }
@@ -581,7 +617,7 @@ auto main(int argc, char** argv) -> int
                  "unpack-mbe-dir   -> folder in, folder out\n"
                  "pack-afs2        -> folder in, file out\n"
                  "unpack-afs2      -> file in, folder out\n"
-                 "file-encrypt, file-decrypt, save-encrypt, save-decrypt\n"
+                 "encrypt-file, decrypt-file, encrypt-save, decrypt-save\n"
                  "                 -> file in, file out\n"
                  "Some mods only applies to certain games.");
     base_options("input,i",
