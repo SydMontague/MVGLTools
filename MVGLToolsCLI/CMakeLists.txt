@@ -11,4 +11,5 @@ install(DIRECTORY ../structures/ DESTINATION structures/)
 install(FILES ../README.md ../LICENSE ../THIRD-PARTY-NOTICE DESTINATION .)
 
 set(CPACK_GENERATOR "ZIP")
+set(CPACK_PACKAGE_VERSION "v${PROJECT_VERSION}")
 include(CPack)
