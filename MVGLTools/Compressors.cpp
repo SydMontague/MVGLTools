@@ -77,7 +77,7 @@ namespace mvgltools
                                           static_cast<int32_t>(input.size()),
                                           static_cast<int32_t>(output.size()));
 
-        if (result != size) return std::unexpected(std::format("Error: something went wrong while decompressing."));
+        if (result != size) return std::unexpected(std::format("Error: something went wrong while decompressing. Code: {}", result));
         return output;
     }
 

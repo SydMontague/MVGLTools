@@ -169,6 +169,13 @@ namespace mvgltools::mdb1::detail
         uint64_t compressedSize;
     };
 
+    struct FileDataEntry64Small
+    {
+        uint64_t offset;
+        uint32_t fullSize;
+        uint32_t compressedSize;
+    };
+
     template<size_t name_length, size_t extension_length>
     class FileNameEntry
     {
@@ -364,6 +371,25 @@ namespace mvgltools::mdb1
         static_assert(sizeof(TreeEntry) == 0x10);
         static_assert(sizeof(NameEntry) == 0x80);
         static_assert(sizeof(DataEntry) == 0x18);
+    };
+
+    /**
+     * Digimon Story: Time Stranger in Nintendo Switch
+     */
+    struct DSTSNX
+    {
+        using InputStream  = std::ifstream;
+        using OutputStream = std::ofstream;
+        using Header       = MDB1Header64;
+        using TreeEntry    = FileTreeEntry64;
+        using NameEntry    = FileNameEntry<0x7C, 4>;
+        using DataEntry    = FileDataEntry64Small;
+        using Compressor   = LZ4;
+
+        static_assert(sizeof(Header) == 0x20);
+        static_assert(sizeof(TreeEntry) == 0x10);
+        static_assert(sizeof(NameEntry) == 0x80);
+        static_assert(sizeof(DataEntry) == 0x10);
     };
 
     /**
@@ -572,6 +598,7 @@ namespace mvgltools::mdb1
                 output.seekp(dataStart + offset);
                 output.write(data->data.data(), data->data.size());
                 offset += data->data.size();
+                // TODO some formats align offset to 0x10 bytes, is that necessary/better?
             }
         }
 

@@ -49,6 +49,9 @@ Valid values are:
 - dsts
   - for Digimon Story: Time Stranger
 	- optional structure files for MBE
+- dsts-switch
+  - for Digimon Story: Time Stranger on Nintendo Switch
+	- optional structure files for MBE
 - thl
   - for The Hundred Line -Last Defense Academy-
 	- optional structure files for MBE

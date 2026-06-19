@@ -35,6 +35,7 @@ namespace
         DSCS,
         DSCS_CONSOLE,
         DSTS,
+        DSTSNX,
         THL,
 
         INVALID,
@@ -271,6 +272,15 @@ namespace
     struct DSTSModule
     {
         using MDB1Module      = mvgltools::mdb1::DSTS;
+        using EXPAModule      = mvgltools::expa::DSTS;
+        using CryptModule     = DummyFileCryptor;
+        using SaveCryptModule = AESSaveCryptor;
+        using AFS2Module      = DummyAFS2Packer;
+    };
+
+    struct DSTSNXModule
+    {
+        using MDB1Module      = mvgltools::mdb1::DSTSNX;
         using EXPAModule      = mvgltools::expa::DSTS;
         using CryptModule     = DummyFileCryptor;
         using SaveCryptModule = AESSaveCryptor;
@@ -580,6 +590,9 @@ namespace
         map["ts"]            = GameMode::DSTS;
         map["time-stranger"] = GameMode::DSTS;
 
+        map["dsts-nx"]     = GameMode::DSTSNX;
+        map["dsts-switch"] = GameMode::DSTSNX;
+
         map["hundred-line"] = GameMode::THL;
         map["thl"]          = GameMode::THL;
         map["hl"]           = GameMode::THL;
@@ -640,9 +653,12 @@ auto main(int argc, char** argv) -> int
     namespace po = boost::program_options;
     po::variables_map vm;
     po::positional_options_description pos;
-    po::options_description desc(std::format("{} {} by SydMontague | https://github.com/SydMontague/MVGLTools/\n"
-                                 "Usage: MVGLToolsCLI --game=<game> --mode=<mode> <source> <target> [mode options]", PROJECT_NAME, PROJECT_VERSION),
-                                 120);
+    po::options_description desc(
+        std::format("{} {} by SydMontague | https://github.com/SydMontague/MVGLTools/\n"
+                    "Usage: MVGLToolsCLI --game=<game> --mode=<mode> <source> <target> [mode options]",
+                    PROJECT_NAME,
+                    PROJECT_VERSION),
+        120);
 
     auto base_options = desc.add_options();
     base_options("help,h", "This text.");
@@ -706,6 +722,7 @@ auto main(int argc, char** argv) -> int
             case GameMode::DSCS: GameCLI<DSCSModule>::doAction(mode, vm); break;
             case GameMode::DSCS_CONSOLE: GameCLI<DSCSConsoleModule>::doAction(mode, vm); break;
             case GameMode::DSTS: GameCLI<DSTSModule>::doAction(mode, vm); break;
+            case GameMode::DSTSNX: GameCLI<DSTSNXModule>::doAction(mode, vm); break;
             case GameMode::THL: GameCLI<THLModule>::doAction(mode, vm); break;
             case GameMode::INVALID: std::cout << "Invalid Game\n"; break;
         }
