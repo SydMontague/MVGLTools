@@ -355,6 +355,25 @@ namespace mvgltools::mdb1
     };
 
     /**
+     * Chaos Rings III
+     */
+    struct ChaosRings3
+    {
+        using InputStream  = std::ifstream;
+        using OutputStream = std::ofstream;
+        using Header       = MDB1Header32;
+        using TreeEntry    = FileTreeEntry32;
+        using NameEntry    = FileNameEntry<0x3C, 4>;
+        using DataEntry    = FileDataEntry32;
+        using Compressor   = Doboz;
+
+        static_assert(sizeof(Header) == 0x14);
+        static_assert(sizeof(TreeEntry) == 0x08);
+        static_assert(sizeof(NameEntry) == 0x40);
+        static_assert(sizeof(DataEntry) == 0x0C);
+    };
+
+    /**
      * Digimon Story: Time Stranger
      */
     struct DSTS

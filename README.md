@@ -5,6 +5,7 @@ Currently supported games are:
 - Digimon Story: Cyber Sleuth (DSCS)
 - Digimon Story: Time Stranger (DSTS)
 - The Hundred Line -Last Defense Academy- (THL)
+- Chaos Rings III (CR3)
 
 Other games *might* work with one of these presets. If you want other games to be added, please open an issue or contact me.
 
@@ -55,6 +56,10 @@ Valid values are:
 - thl
   - for The Hundred Line -Last Defense Academy-
 	- optional structure files for MBE
+- cr3
+	- for Chaos Rings III
+	- requires structure files for MBE, see MBE section
+	  - structure files not included
 
 ## --mode
 
@@ -109,7 +114,7 @@ To decrypt the saves of other games:
 MBE Files contain a number of data tables and get extracted by the tool into CSV files that can be easily modified.
 **Do not use Microsoft Excel to modify extracted CSV files, it does *not* create RFC 4180 compliant CSV.** Use LibreOffice/OpenOffice as an alternative.
 
-In order for the MBE functions to work it to know the underlying data structure. For some games (DSCS) this has to be provided from the outside, while others (DSTS, THL) stored it in the file itself, albeit without names.
+In order for the MBE functions to work it to know the underlying data structure. For some games (DSCS, CR3) this has to be provided from the outside, while others (DSTS, THL) stored it in the file itself, albeit without names.
 
 So in order to provide the structure and/or names, the `structures` folder and its contents should exist within the current working directory (i.e. the folder your terminal currently is in). For each game there is a subfolder (note: dscs and dscs-console are treated as the same), which each containing a `structure.json`.
 That file contains a simple `regexPattern: structureDefinition.json` associations. The tool matches the currently handled file path with the patterns and picks the first match.

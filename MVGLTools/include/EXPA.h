@@ -180,6 +180,14 @@ namespace mvgltools::expa
     };
 
     // See EXPA concept for details
+    struct ChaosRings3
+    {
+        static constexpr auto ALIGN_STEP            = 4;
+        static constexpr auto HAS_STRUCTURE_SECTION = false;
+        static constexpr auto STRUCTURE_FOLDER      = "structures/chaos-rings-3/";
+    };
+
+    // See EXPA concept for details
     struct DSTS
     {
         static constexpr auto ALIGN_STEP            = 8;

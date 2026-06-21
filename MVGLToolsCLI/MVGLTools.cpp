@@ -37,6 +37,7 @@ namespace
         DSTS,
         DSTSNX,
         THL,
+        CHAOS_RINGS3,
 
         INVALID,
     };
@@ -311,6 +312,15 @@ namespace
         using EXPAModule      = mvgltools::expa::DSCS;
         using CryptModule     = DSCSFileCryptor;
         using SaveCryptModule = DSCSSaveCryptor;
+        using AFS2Module      = DSCSAFS2Packer;
+    };
+
+    struct ChaosRings3Module
+    {
+        using MDB1Module      = mvgltools::mdb1::ChaosRings3;
+        using EXPAModule      = mvgltools::expa::ChaosRings3;
+        using CryptModule     = DummyFileCryptor;
+        using SaveCryptModule = DummySaveCryptor;
         using AFS2Module      = DSCSAFS2Packer;
     };
 
@@ -596,6 +606,10 @@ namespace
         map["hundred-line"] = GameMode::THL;
         map["thl"]          = GameMode::THL;
         map["hl"]           = GameMode::THL;
+
+        map["cr3"]          = GameMode::CHAOS_RINGS3;
+        map["chaos-rings3"] = GameMode::CHAOS_RINGS3;
+
         return map;
     }
 
@@ -724,6 +738,7 @@ auto main(int argc, char** argv) -> int
             case GameMode::DSTS: GameCLI<DSTSModule>::doAction(mode, vm); break;
             case GameMode::DSTSNX: GameCLI<DSTSNXModule>::doAction(mode, vm); break;
             case GameMode::THL: GameCLI<THLModule>::doAction(mode, vm); break;
+            case GameMode::CHAOS_RINGS3: GameCLI<ChaosRings3Module>::doAction(mode, vm); break;
             case GameMode::INVALID: std::cout << "Invalid Game\n"; break;
         }
     }
